@@ -184,12 +184,12 @@ public class Board {
      * @param player The player object to move
      * @param vector The force or movement to apply to the player
      * @return True if the player completed the move, false otherwise
-     */
+     *//*
     private boolean move(Player player, int[] vector) {
         boolean moved = true;
         try {
             int[] playerCoords = player.coordinate;
-            int[] nextPosition = IntArray.add(playerCoords, vector);
+            int[] nextPosition = Array.add(playerCoords, vector);
             if (this.validateCoordinate(nextPosition)) {
                 this.board[playerCoords[1]][playerCoords[0]] = this.blank;
                 player.coordinate = nextPosition;
@@ -201,7 +201,7 @@ public class Board {
             moved = false;
         }
         return moved;
-    }
+    }*/
 
     /**
      * Represents the different vectors for each cardinal direction
@@ -258,7 +258,7 @@ public class Board {
         int[] playerCoords = player.coordinate;
         int[] targetCoords = target.coordinate;
 
-        pla
+        return true;
     }
 
 
@@ -266,24 +266,24 @@ public class Board {
      * Moves the Player with the force of a vector
      * @param vector The force or movement to apply to the Player
      * @throws InvalidPositionError If the player tries to move to an occupied coordinate or outside the board
-     */
+     *//*
     public void movePlayer(int[] vector) throws InvalidPositionError {
         if(!this.move(this.player, vector)) {
             throw new InvalidPositionError("Can't move the player to that position");
         }
-    }
+    }*/
 
     /**
      * Iterates through the enemies array moving them towards the Player
-     */
+     *//*
     public void moveEnemies() {
         Player target = this.player;
         int[] targetCoords = target.coordinate;
         for (Enemy enemy : enemies) {
             try {
                 int[] enemyCoords = enemy.coordinate;
-                int[] distanceFromTarget = IntArray.unsign(
-                                                IntArray.substract(enemyCoords, targetCoords)
+                int[] distanceFromTarget = Array.unsign(
+                                                Array.substract(enemyCoords, targetCoords)
                                             );
                 int[] vector = new int[]{0, 0};
 
@@ -302,10 +302,10 @@ public class Board {
                 this.move(enemy, vector);
 
             } catch (InvalidArrayError err) {
-                /** This part shouldn't execute */
+                /** This part shouldn't execute *//*
             }
         }
-    }
+    }*/
 
 
     /**
