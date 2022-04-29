@@ -13,20 +13,15 @@ public class GameGUI {
     private final Color ENEMY_COLOR = new Color(247, 116, 106);
     private Board BOARD;
     
-    private final JFrame root = new JFrame("Game");
-    private JButton[][] boardTiles;
-    private JPanel boardPanel;
+    public final JFrame root = new JFrame("Game");
+    public JButton[][] boardTiles;
+    public JPanel boardPanel;
 
     /**
      * Base consctructor.
      */
     public GameGUI(Board board) {
         BOARD = board;
-        initRoot(300, 300);
-        initBoard();
-        root.pack();
-        root.setMinimumSize(root.getSize());
-        root.setVisible(true);
     }
 
     public void setBoard(Board board) {
@@ -38,8 +33,7 @@ public class GameGUI {
      * @param width - The width of the {@code Frame}
      * @param height - The height of the {@code Frame}
      */
-    private void initRoot(int width, int height) {
-        root.setSize(width, height);
+    private void initRoot() {
         root.setLayout(new FlowLayout());
         root.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -68,19 +62,15 @@ public class GameGUI {
     }
 
     /**
-     * Updates the board values.
-     * @param b - A {@code Board} object
+     * Initializes the basic properties for the GUI.
      */
-    public void updateBoard(char[][] board) {
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board[y].length; x++) {
-                char tile = board[y][x];
-                if (tile == Player.symbol) {
-                    boardPanel.getComponentAt(x+1, y+1).setBackground(PLAYER_COLOR);
-                } else if (tile == Enemy.symbol) {
-                    boardPanel.getComponentAt(x+1, y+1).setBackground(ENEMY_COLOR);
-                }
-            }
-        }
+    public void init() {
+        initRoot();
+        initBoard();
+
+        root.pack();
+        root.setMinimumSize(root.getSize());
+        root.setVisible(true);
     }
+
 }

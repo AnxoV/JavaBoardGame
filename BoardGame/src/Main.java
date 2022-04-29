@@ -8,14 +8,16 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Board board = new Board(10, 10);
         board.spawnEnemy(new int[]{0, 0});
-        board.spawnPlayer(new int[]{4, 4});
         System.out.println(board.getBoard());
 
         Runnable r = new Runnable() {
             @Override
             public void run() {
                 GameGUI gameGUI = new GameGUI(board);
-                gameGUI.updateBoard(board.getCharsBoard());
+                gameGUI.setBoard(board);
+                gameGUI.init();
+                
+                
             }
         };
         SwingUtilities.invokeLater(r);
