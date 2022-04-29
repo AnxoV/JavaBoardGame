@@ -43,10 +43,10 @@ public class Board {
      * Creates a 5 x 5 empty {@code Board} object.
      */
     public Board() {
-        this.width = 5;
-        this.height = 5;
-        this.board = new char[this.height][this.width];
-        this.fillBlank();
+        width = 5;
+        height = 5;
+        board = new char[height][width];
+        fillBlank();
     }
 
     /**
@@ -59,40 +59,40 @@ public class Board {
     public Board(int width, int height) {
         this.width = width;
         this.height = height;
-        this.board = new char[this.height][this.width];
-        this.fillBlank();
+        board = new char[height][width];
+        fillBlank();
     }
 
     public int getWidth() {
-        return this.width;
+        return width;
     }
 
     public int getHeight() {
-        return this.height;
+        return height;
     }
 
     public Player getPlayer() {
-        return this.player;
+        return player;
     }
 
     public ArrayList<Enemy> getEnemies() {
-        return this.enemies;
+        return enemies;
     }
 
     public char getBlank() {
-        return this.blank;
+        return blank;
     }
 
     public char getBorder() {
-        return this.border;
+        return border;
     }
 
     public char getDeath() {
-        return this.death;
+        return death;
     }
 
     public boolean getRun() {
-        return this.run;
+        return run;
     }
 
 
@@ -100,9 +100,9 @@ public class Board {
      * Fills the {@code Board} with the {@code blank} character value.
      */
     public void fillBlank() {
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                this.board[y][x] = this.blank;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                board[y][x] = blank;
             }
         }
     }
@@ -115,7 +115,7 @@ public class Board {
     public boolean validateCoordinate(int[] coordinate) {
         boolean valid = true;
         try {
-            if (this.board[coordinate[1]][coordinate[0]] != this.blank) {
+            if (board[coordinate[1]][coordinate[0]] != blank) {
                 valid = false;
             }
         } catch (IndexOutOfBoundsException err) {
@@ -129,11 +129,11 @@ public class Board {
      * @throws InvalidPositionError If the coordinate to spawn the {@code Player} at, is not valid
      */
     public void spawnPlayer() throws InvalidPositionError {
-        if (!this.validateCoordinate(new int[]{0, 0})) {
+        if (!validateCoordinate(new int[]{0, 0})) {
             throw new InvalidPositionError("Can't spawn the player at that position. The position is not empty or is outside the boards boundaries");
         }
-        this.player = new Player();
-        this.board[0][0] = this.player.symbol;
+        player = new Player();
+        board[0][0] = player.symbol;
     }
 
     /**
@@ -142,11 +142,11 @@ public class Board {
      * @throws InvalidPositionError If the coordinate to spawn the {@code Player} at, is not valid
      */
     public void spawnPlayer(int[] coordinate) throws InvalidPositionError {
-        if (!this.validateCoordinate(coordinate)) {
+        if (!validateCoordinate(coordinate)) {
             throw new InvalidPositionError("Can't spawn the player at that position. The position is not empty or is outside the boards boundaries");
         }
-        this.player = new Player(coordinate);
-        this.board[coordinate[1]][coordinate[0]] = this.player.symbol;
+        player = new Player(coordinate);
+        board[coordinate[1]][coordinate[0]] = player.symbol;
     }
 
     /**
@@ -156,18 +156,18 @@ public class Board {
     private int[] randomBorderCoordinate() {
         Random rand = new Random();
         int[] coordinate = new int[]{
-            rand.nextInt(this.width),
-            rand.nextInt(this.height)
+            rand.nextInt(width),
+            rand.nextInt(height)
         };
         int randNum = rand.nextInt(4);
         if (randNum == 0) {
             coordinate[0] = 0;
         } else if (randNum == 1) {
-            coordinate[0] = this.width-1;
+            coordinate[0] = width-1;
         } else if (randNum == 2) {
             coordinate[1] = 0;
         } else if (randNum == 3) {
-            coordinate[1] = this.height-1;
+            coordinate[1] = height-1;
         }
         return coordinate;
     }
@@ -178,11 +178,11 @@ public class Board {
      */
     public void spawnEnemy() throws InvalidPositionError {
         int[] coordinate = randomBorderCoordinate();
-        if (!this.validateCoordinate(coordinate)) {
+        if (!validateCoordinate(coordinate)) {
             throw new InvalidPositionError("Can't spawn the enemy at that position. The position is not empty or is outside the boards boundaries");
         }
         Enemy enemy = new Enemy(coordinate);
-        this.board[coordinate[1]][coordinate[0]] = enemy.symbol;
+        board[coordinate[1]][coordinate[0]] = enemy.symbol;
         enemies.add(enemy);
     }
 
@@ -192,11 +192,11 @@ public class Board {
      * @throws InvalidSpawnPosition If the coordinate to spawn the {@code Enemy} at, is not valid
      */
     public void spawnEnemy(int[] coordinate) throws InvalidPositionError {
-        if (!this.validateCoordinate(coordinate)) {
+        if (!validateCoordinate(coordinate)) {
             throw new InvalidPositionError("Can't spawn the enemy at that position. The position is not empty or is outside the boards boundaries");
         }
         Enemy enemy = new Enemy(coordinate);
-        this.board[coordinate[1]][coordinate[0]] = enemy.symbol;
+        board[coordinate[1]][coordinate[0]] = enemy.symbol;
         enemies.add(enemy);
     }
 
@@ -210,10 +210,10 @@ public class Board {
         boolean moved = true;
         int[] playerCoords = player.coordinate;
         int[] nextPosition = Array.sum(playerCoords, vector);
-        if (this.validateCoordinate(nextPosition)) {
-            this.board[playerCoords[1]][playerCoords[0]] = this.blank;
+        if (validateCoordinate(nextPosition)) {
+            board[playerCoords[1]][playerCoords[0]] = blank;
             player.coordinate = nextPosition;
-            this.board[nextPosition[1]][nextPosition[0]] = player.symbol;
+            board[nextPosition[1]][nextPosition[0]] = player.symbol;
         } else {
             moved = false;
         }
@@ -244,7 +244,7 @@ public class Board {
          * @return An {@code int[]} {x, y} vector
          */
         public int[] getVector() {
-            return this.vector;
+            return vector;
         }
     }
 
@@ -281,13 +281,13 @@ public class Board {
         if (Array.contains(target.coordinate, getAdjacentCoords(player))) {
             target.hp -= player.damage;
 
-            if (this.isDead(target)) {
+            if (isDead(target)) {
                 if (Enemy.class.isAssignableFrom(target.getClass())) {
                     enemies.remove(target);
-                    this.board[target.coordinate[1]][target.coordinate[0]] = this.blank;
+                    board[target.coordinate[1]][target.coordinate[0]] = blank;
                 } else {
-                    this.board[target.coordinate[1]][target.coordinate[0]] = this.death;
-                    this.run = false;
+                    board[target.coordinate[1]][target.coordinate[0]] = death;
+                    run = false;
                 }
             }
             attacked = true;
@@ -311,7 +311,7 @@ public class Board {
      * @throws InvalidPositionError If the coordinate the {@code Player} tries to move at, is not valid
      */
     public void movePlayer(int[] vector) throws InvalidPositionError {
-        if(!this.move(this.player, vector)) {
+        if(!move(player, vector)) {
             throw new InvalidPositionError("Can't move the player to that position. The position is not empty or is outside the boards boundaries");
         }
     }
@@ -322,10 +322,10 @@ public class Board {
      * If an {@code Enemy} is within reach of the {@code Player}, it attacks him.
      */
     public void moveEnemies() {
-        Player target = this.player;
+        Player target = player;
         for (Enemy enemy : enemies) {
             if (Array.contains(target.coordinate, getAdjacentCoords(enemy))) {
-                this.attack(enemy, target);
+                attack(enemy, target);
             } else {
                 int[] distanceFromTarget = Array.substract(enemy.coordinate, target.coordinate);
                 distanceFromTarget = Array.unsign(distanceFromTarget);
@@ -344,37 +344,45 @@ public class Board {
                     }
                 }
                 
-                this.move(enemy, vector);
+                move(enemy, vector);
             }
         }
     }
 
 
     /**
-     * Builds a string representing the {@code Board} and {@code Players}
+     * Builds a string representing the {@code Board} and {@code Players}.
      * @return The stylished board
      */
     public String getBoard() {
-        String board = "";
+        String string = "";
 
-        for (int i = 0; i < this.width+2; i++) {
-            board += this.border + " ";
+        for (int i = 0; i < width+2; i++) {
+            string += border + " ";
         }
-        board += "\n";
+        string += "\n";
 
-        for (char[] row : this.board) {
-            board += this.border + " ";
+        for (char[] row : board) {
+            string += border + " ";
             for (char c : row) {
-                board += c + " ";
+                string += c + " ";
             }
-            board += this.border + "\n";
+            string += border + "\n";
         }
 
-        for (int i = 0; i < this.width+2; i++) {
-            board += this.border + " ";
+        for (int i = 0; i < width+2; i++) {
+            string += border + " ";
         }
-        board += "\n";
+        string += "\n";
 
+        return string;
+    }
+
+    /**
+     * Returns the {@code char[][]} array of the {@code Board} object.
+     * @return A {@code char[][]} array of the {@code Board} tiles
+     */
+    public char[][] getCharsBoard() {
         return board;
     }
 

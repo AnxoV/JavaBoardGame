@@ -1,14 +1,13 @@
 package src.Game;
 
 public class Enemy extends Player {
+    public static char symbol = '0';
     public Enemy() {
         super();
-        this.symbol = '0';
     }
 
     public Enemy(int[] coordinate) {
         super(coordinate);
-        this.symbol = '0';
     }
 
     /**
@@ -16,9 +15,8 @@ public class Enemy extends Player {
      */
     @Override
     protected void initializeDefaults() {
-        this.symbol = '0';
-        this.hp = 1;
-        this.movePoints = 1;
-        this.damage = 1;
+        hp = 1;
+        movePoints = 1;
+        damage = 1;
     }
 }

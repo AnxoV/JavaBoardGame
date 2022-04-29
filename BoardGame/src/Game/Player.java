@@ -2,41 +2,40 @@ package src.Game;
 
 public class Player {
     protected int[] coordinate;
-    protected char symbol;
+    public static char symbol = 'X';
     protected int hp;
     protected int movePoints;
     protected int damage;
 
     public Player() {
-        this.coordinate = new int[]{0, 0};
-        this.initializeDefaults();
+        coordinate = new int[]{0, 0};
+        initializeDefaults();
     }
 
     public Player(int [] coordinate) {
         this.coordinate = coordinate;
-        this.initializeDefaults();
+        initializeDefaults();
     }
 
     /**
      * Sets the dafult properties for the class
      */
     protected void initializeDefaults() {
-        this.symbol = 'X';
-        this.hp = 10;
-        this.movePoints = 1;
-        this.damage = 1;
+        hp = 10;
+        movePoints = 1;
+        damage = 1;
     }
 
     public int[] getCoordinate() {
-        return this.coordinate;
+        return coordinate;
     }
 
     public char getSymbol() {
-        return this.symbol;
+        return symbol;
     }
 
     public int getMovePoints() {
-        return this.movePoints;
+        return movePoints;
     }
 
     private int[] add(int[] v1, int[] v2) {
@@ -44,11 +43,11 @@ public class Player {
     }
 
     public void move(int[] vector) {
-        this.coordinate = this.add(this.coordinate, vector);
+        coordinate = add(coordinate, vector);
     }
 
     @Override
     public String toString() {
-        return "{x: " + this.coordinate[0] + ", y: " + this.coordinate[1] + "}";
+        return "{x: " + coordinate[0] + ", y: " + coordinate[1] + "}";
     }
 }

@@ -1,11 +1,25 @@
 package src;
 
-import src.Exceptions.InvalidPositionError;
+import javax.swing.SwingUtilities;
+import src.GUI.GameGUI;
 import src.Game.Board;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Board board = new Board(9, 9);
+        Board board = new Board(10, 10);
+        board.spawnEnemy(new int[]{0, 0});
+        board.spawnPlayer(new int[]{4, 4});
+        System.out.println(board.getBoard());
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                GameGUI gameGUI = new GameGUI(board);
+                gameGUI.updateBoard(board.getCharsBoard());
+            }
+        };
+        SwingUtilities.invokeLater(r);
+        /*Board board = new Board(9, 9);
         board.spawnPlayer(new int[]{4, 4});
         board.spawnEnemy();
         board.spawnEnemy();
@@ -18,6 +32,6 @@ public class Main {
             Thread.sleep(500);
         }
         System.out.println(board.getBoard());
-        System.out.println("Game ended");
+        System.out.println("Game ended");*/
     }
 }
