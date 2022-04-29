@@ -1,8 +1,11 @@
+package src.Game;
+
 public class Player {
     protected int[] coordinate;
     protected char symbol;
     protected int hp;
     protected int movePoints;
+    protected int damage;
 
     public Player() {
         this.coordinate = new int[]{0, 0};
@@ -21,6 +24,7 @@ public class Player {
         this.symbol = 'X';
         this.hp = 10;
         this.movePoints = 1;
+        this.damage = 1;
     }
 
     public int[] getCoordinate() {

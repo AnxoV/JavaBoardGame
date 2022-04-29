@@ -1,3 +1,5 @@
+package src.Game;
+
 public class Enemy extends Player {
     public Enemy() {
         super();
@@ -17,5 +19,6 @@ public class Enemy extends Player {
         this.symbol = '0';
         this.hp = 1;
         this.movePoints = 1;
+        this.damage = 1;
     }
 }

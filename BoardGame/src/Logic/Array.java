@@ -1,8 +1,13 @@
+package src.Logic;
+
+import src.Exceptions.InvalidArrayError;
+import src.Exceptions.InvalidParameterError;
+
 /**
  * Class that performs basic operations with arrays
  * 
- * @author Anxo Vilas
  * @version 1.0
+ * @author Anxo Vilas
  */
 public class Array {
 
@@ -509,6 +514,78 @@ public class Array {
         return found;
     }
 
+    /**
+     * Counts the length of every item in an array and stores it in an <code>int[]</code> array.
+     * <p>
+     * Example:
+     * <p>
+     * lengths({{}, {1}, {1, 2}}) -> {0, 1, 2}
+     * 
+     * @param array - The <code>int[][]</code> array to count from
+     * @return An <code>int[]</code> array containing the array lengths as its indexes
+     */
+    public static int[] lengths(int[][] array) {
+        int size = array.length;
+        int[] result = new int[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = array[i].length;
+        }
+        return result;
+    }
+
+    /**
+     * Searches for the minimum value on an array.
+     * <p>
+     * Example:
+     * <p>
+     * min({3, 1, 2}) -> 1
+     * <p>
+     * min({1, 1}) -> 1
+     * 
+     * @param array - The <code>int[]</code> array to search in
+     * @return An <code>int</code> containing the minimum element of the array
+     * @throws InvalidArrayError If the <code>int[]</code> array is empty
+     */
+    public static int min(int[] array) throws InvalidArrayError {
+        if (array.length < 1) {
+            throw new InvalidArrayError("The array must not be empty");
+        }
+        int min = Integer.MAX_VALUE;
+        for (int i : array) {
+            if (i <= min) {
+                min = i;
+            }
+        }
+        return min;
+    }
+
+    /**
+     * Searches for the maximum value on an array.
+     * <p>
+     * Example:
+     * <p>
+     * max({2, 3, 1}) -> 3
+     * <p>
+     * max({1, 1}) -> 1
+     * 
+     * @param array - The <code>int[]</code> array to search in
+     * @return An <code>int</code> containing the maximum element of the array
+     * @throws InvalidArrayError If the <code>int[]</code> array is empty
+     */
+    public static int max(int[] array) throws InvalidArrayError {
+        if (array.length < 1) {
+            throw new InvalidArrayError("The array must not be empty");
+        }
+        int max = Integer.MIN_VALUE;
+        for (int i : array) {
+            if (i >= max) {
+                max = i;
+            }
+        }
+        return max;
+    }
+
+
 
     
     /**
@@ -534,7 +611,7 @@ public class Array {
     /**
      * Sums every value of two different arrays.
      * <p>
-     * If one array is shorter than the other, the resulting array will have the length of the larger one.
+     * If the arrays vary in size, the result will be the addition of the overlapped indexes.
      * <p>
      * Example:
      * <p>
@@ -560,7 +637,7 @@ public class Array {
 
     /**
      * Sums every value of two different arrays.
-     * If restrictive is set to true, all the arrays must be of equal lengths
+     * If restrictive is set to true, all of the arrays must be of equal lengths.
      * <p>
      * Example:
      * <p>
@@ -585,65 +662,111 @@ public class Array {
         return sum(a1, a2);
     }
 
-
-
-
     /**
-     * Adds n arrays of the same length together
-     * @param vArray An array consisting of the different arrays to combine
-     * @return The result of the operation
-     * @throws InvalidArrayError If:
-     *  - The arrays size doesn't match
-     * /*
-    public static int[] add(int[][] vArray) throws InvalidArrayError {
-        if (!validateArray(vArray)) {
-            throw new InvalidArrayError("The size of the arrays must match");
-        }
-        int size = vArray[0].length;
+     * Sums <b>n</b> arrays together.
+     * <p>
+     * If the arrays vary in size, the result will be the addition of the overlapped indexes.
+     * <p>
+     * Example:
+     * <p>
+     * sum({{}, {0}, {1, 2}}) -> {1, 2}
+     * 
+     * @param arrays - The <code>int[][]</code> array to operate with
+     * @return An <code>int[]</code> array with the result of the addition
+     */
+    public static int[] sum(int[][] arrays) {
+        int size = 0;
+        try {
+            size = max(lengths(arrays));
+        } catch (InvalidArrayError err) {}
+
         int[] result = new int[size];
-        for (int i = 0; i < size; i++) {
-            result[i] = 0;
-            for (int[] array : vArray) {
-                result[i] += array[i];
-            }
+        for (int[] array : arrays) {
+            result = sum(result, array);
         }
         return result;
-    }*/
-
-    /**
-     * Substract an integer n to an array v
-     * @param v The specified array
-     * @param n The constant to substract
-     * @return The result of the operation
-     */
-    public static int[] substract(int[] v, int n) {
-        return add(v, -n);
     }
 
     /**
-     * Substracts the second array from the first array
-     * @param v1 The first array
-     * @param v2 The second array
-     * @return The result of the operation
-     * @throws InvalidArrayError If:
-     *  - The arrays size doesn't match
-     *  - The arrays have a size of 0
-     *//*
-    public static int[] substract(int[] v1, int[] v2) throws InvalidArrayError {
-        return add(v1, negate(v2));
-    }*/
+     * Sums <b>n</b> arrays together.
+     * <p>
+     * If restrictive is set to true, all of the arrays must be of equal lengths.
+     * <p>
+     * Example:
+     * <p>
+     * sum({{1}, {1, 2}, {1, 2, 3}}, false) -> {3, 4, 3}
+     * <p>
+     * sum({{1, 1}, {2, 2}, {3, 3}}, true) -> {6, 6}
+     * <p>
+     * sum({{1}, {1, 2}, {1, 2, 3}}, true) -> InvalidArrayError
+     * 
+     * @param arrays - The <code>int[][]</code> array to operate with
+     * @param restrictive - The restriction to calculate the addition
+     * @return An <code>int[]</code> array with the result of the addition
+     * @throws InvalidArrayError If the <code>restrictive</code> parameter is set to true and the arrays are incosistent on sizes
+     */
+    public static int[] sum(int[][] arrays, boolean restrictive) throws InvalidArrayError {
+        if (restrictive) {
+            if (!areSameSize(arrays)) {
+                throw new InvalidArrayError("The arrays lengths doesn't match");
+            }
+        }
+        return sum(arrays);
+    }
+
+
 
     /**
-     * Multiplys an integer n to an array v
-     * @param v The specified array
-     * @param n The constant to multiply
-     * @return The result of the operation
+     * Substracts an integer <b>n</b> to every value of the specified array.
+     * <p>
+     * Example:
+     * <p>
+     * substract({1, 2, 3}, 1) -> {0, 1, 2}
+     * 
+     * @param array - The <code>int[]</code> array to operate with
+     * @param n - The value to substract
+     * @return An <code>int[]</code> array with the result of the substraction
      */
-    public static int[] multiply(int[] v, int n) {
-        int size = v.length;
+    public static int[] substract(int[] array, int n) {
+        return add(array, -n);
+    }
+
+    /**
+     * Substracts the second array from the first array.
+     * <p>
+     * If the arrays vary in size, the result will be the substraction of the overlapped indexes.
+     * <p>
+     * Example:
+     * <p>
+     * substract({1, 2}, {0, 1}) -> {1, 1}
+     * <p>
+     * substract({1, 2}, {1}) -> {0, 2}
+     * 
+     * @param a1 - The first <code>int[]</code> array
+     * @param a2 - The second <code>int[]</code> array
+     * @return An <code>int[]</code> array with the result of the substraction
+     */
+    public static int[] substract(int[] a1, int[] a2) {
+        return sum(a1, negate(a2));
+    }
+
+
+    /**
+     * Multiplies an integer <b>n</b> to every value of the specified array.
+     * <p>
+     * Example:
+     * <p>
+     * multiply({1, 2, 3}, 2) -> {2, 4, 6}
+     * 
+     * @param array - The <code>int[]</code> array to operate with
+     * @param n - The value to multiply
+     * @return An <code>int[]</code> array with the result of the multiplication
+     */
+    public static int[] multiply(int[] array, int n) {
+        int size = array.length;
         int[] result = new int[size];
         for (int i = 0; i < size; i++) {
-            result[i] = v[i] * n;
+            result[i] = array[i] * n;
         }
         return result;
     }
