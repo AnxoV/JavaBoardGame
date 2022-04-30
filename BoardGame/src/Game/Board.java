@@ -8,12 +8,7 @@ import src.Exceptions.InvalidPositionError;
 
 /**
  * TO-DO:
- * - Redesign movePlayer function
- * - Redesign moveEnemies function
- * - Make generic move function with parameters Player player and int[] vector
- * - No need for another add function, search for built-in array add function
- * - No need for distance function
- * - Redesign get board function
+ * - Implement another way of calling coordinate based function parameters with two parameters x and y
  */
 
 
@@ -27,15 +22,17 @@ public class Board {
     private char[][] board;
     private int width;
     private int height;
+    private int[] center;
 
     private Player player;
     private ArrayList<Enemy> enemies = new ArrayList<>();
 
-    private char blank = ' ';
-    private char border = '#';
-    private char death = '-';
+    private final static char blank = ' ';
+    private final static char border = '#';
+    private final static char death = '-';
 
-    private boolean run = true;
+    private boolean alive = true;
+    private int turn = 0;
 
     /**
      * Basic constructor.
@@ -60,6 +57,7 @@ public class Board {
         this.width = width;
         this.height = height;
         board = new char[height][width];
+        center = new int[]{width/2, height/2};
         fillBlank();
     }
 
@@ -69,6 +67,9 @@ public class Board {
 
     public int getHeight() {
         return height;
+    }
+    public int[] getCenter() {
+        return center;
     }
 
     public Player getPlayer() {
@@ -91,8 +92,16 @@ public class Board {
         return death;
     }
 
-    public boolean getRun() {
-        return run;
+    public boolean getAlive() {
+        return alive;
+    }
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    public int getTurn() {
+        return turn;
     }
 
 
@@ -133,7 +142,7 @@ public class Board {
             throw new InvalidPositionError("Can't spawn the player at that position. The position is not empty or is outside the boards boundaries");
         }
         player = new Player();
-        board[0][0] = player.symbol;
+        board[0][0] = player.getSymbol();
     }
 
     /**
@@ -146,7 +155,7 @@ public class Board {
             throw new InvalidPositionError("Can't spawn the player at that position. The position is not empty or is outside the boards boundaries");
         }
         player = new Player(coordinate);
-        board[coordinate[1]][coordinate[0]] = player.symbol;
+        board[coordinate[1]][coordinate[0]] = player.getSymbol();
     }
 
     /**
@@ -182,7 +191,7 @@ public class Board {
             throw new InvalidPositionError("Can't spawn the enemy at that position. The position is not empty or is outside the boards boundaries");
         }
         Enemy enemy = new Enemy(coordinate);
-        board[coordinate[1]][coordinate[0]] = enemy.symbol;
+        board[coordinate[1]][coordinate[0]] = Enemy.symbol;
         enemies.add(enemy);
     }
 
@@ -196,7 +205,7 @@ public class Board {
             throw new InvalidPositionError("Can't spawn the enemy at that position. The position is not empty or is outside the boards boundaries");
         }
         Enemy enemy = new Enemy(coordinate);
-        board[coordinate[1]][coordinate[0]] = enemy.symbol;
+        board[coordinate[1]][coordinate[0]] = Enemy.symbol;
         enemies.add(enemy);
     }
 
@@ -213,7 +222,7 @@ public class Board {
         if (validateCoordinate(nextPosition)) {
             board[playerCoords[1]][playerCoords[0]] = blank;
             player.coordinate = nextPosition;
-            board[nextPosition[1]][nextPosition[0]] = player.symbol;
+            board[nextPosition[1]][nextPosition[0]] = player.getSymbol();
         } else {
             moved = false;
         }
@@ -287,7 +296,7 @@ public class Board {
                     board[target.coordinate[1]][target.coordinate[0]] = blank;
                 } else {
                     board[target.coordinate[1]][target.coordinate[0]] = death;
-                    run = false;
+                    alive = false;
                 }
             }
             attacked = true;
@@ -320,48 +329,56 @@ public class Board {
      * Iterates through the {@code Enemy[]} array moving them towards the {@code Player}.
      * <p>
      * If an {@code Enemy} is within reach of the {@code Player}, it attacks him.
+     * <p>
+     * An {@code Enemy} takes two turns to move one tile.
      */
     public void moveEnemies() {
-        Player target = player;
-        for (Enemy enemy : enemies) {
-            if (Array.contains(target.coordinate, getAdjacentCoords(enemy))) {
-                attack(enemy, target);
-            } else {
-                int[] distanceFromTarget = Array.substract(enemy.coordinate, target.coordinate);
-                distanceFromTarget = Array.unsign(distanceFromTarget);
-    
-                int[] vector = new int[2];
-    
-                if (distanceFromTarget[0] >= distanceFromTarget[1]) {
-                    vector[0] = enemy.movePoints;
-                    if (enemy.coordinate[0] > target.coordinate[0]) {
-                        vector[0] *= -1;
+        if (turn % 2 == 0) {
+            Player target = player;
+            for (Enemy enemy : enemies) {
+                if (Array.contains(target.coordinate, getAdjacentCoords(enemy))) {
+                    attack(enemy, target);
+                } else {
+                    int[] distanceFromTarget = Array.substract(enemy.coordinate, target.coordinate);
+                    distanceFromTarget = Array.unsign(distanceFromTarget);
+        
+                    int[] vector = new int[2];
+        
+                    if (distanceFromTarget[0] >= distanceFromTarget[1]) {
+                        vector[0] = enemy.movePoints;
+                        if (enemy.coordinate[0] > target.coordinate[0]) {
+                            vector[0] *= -1;
+                        }
+                    } else if (distanceFromTarget[0] < distanceFromTarget[1]) {
+                        vector[1] = enemy.movePoints;
+                        if (enemy.coordinate[1] > target.coordinate[1]) {
+                            vector[1] *= -1;
+                        }
                     }
-                } else if (distanceFromTarget[0] < distanceFromTarget[1]) {
-                    vector[1] = enemy.movePoints;
-                    if (enemy.coordinate[1] > target.coordinate[1]) {
-                        vector[1] *= -1;
-                    }
+                    
+                    move(enemy, vector);
                 }
-                
-                move(enemy, vector);
             }
         }
     }
 
+    /**
+     * Advances to the next turn.
+     */
+    public void nextTurn() {
+        turn++;
+    }
 
     /**
      * Builds a string representing the {@code Board} and {@code Players}.
-     * @return The stylished board
+     * @return The stylished board string
      */
     public String getBoard() {
         String string = "";
-
         for (int i = 0; i < width+2; i++) {
             string += border + " ";
         }
         string += "\n";
-
         for (char[] row : board) {
             string += border + " ";
             for (char c : row) {
@@ -374,7 +391,41 @@ public class Board {
             string += border + " ";
         }
         string += "\n";
+        return string;
+    }
 
+    /**
+     * Builds an HTML encoded string representing the {@code Board} and {@code Players}.
+     * @return The stylished board string
+     */
+    public String getHTMLBoard() {
+        String string = "";
+        string += "<html><pre>";
+        for (int i = 0; i < width+2; i++) {
+            string += border + " ";
+        }
+        string += "\n";
+        for (char[] row : board) {
+            string += border + " ";
+            for (char c : row) {
+                switch (c) {
+                    case '<':
+                        string += "&lt; ";
+                        break;
+                    case '>':                        
+                        string += "&gt; ";
+                        break;
+                    default:
+                        string += c + " ";
+                        break;
+                }
+            }
+            string += border + "\n";
+        }
+        for (int i = 0; i < width+2; i++) {
+            string += border + " ";
+        }
+        string += "\n</pre></html>";
         return string;
     }
 

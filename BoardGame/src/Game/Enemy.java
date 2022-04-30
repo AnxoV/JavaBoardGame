@@ -19,4 +19,9 @@ public class Enemy extends Player {
         movePoints = 1;
         damage = 1;
     }
+
+    @Override
+    public char getSymbol() {
+        return symbol;
+    }
 }

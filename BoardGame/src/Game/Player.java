@@ -2,7 +2,7 @@ package src.Game;
 
 public class Player {
     protected int[] coordinate;
-    public static char symbol = 'X';
+    private char symbol = '^';
     protected int hp;
     protected int movePoints;
     protected int damage;
@@ -32,6 +32,10 @@ public class Player {
 
     public char getSymbol() {
         return symbol;
+    }
+
+    public void setSymbol(char symbol) {
+        this.symbol = symbol;
     }
 
     public int getMovePoints() {

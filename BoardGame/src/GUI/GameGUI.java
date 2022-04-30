@@ -2,20 +2,25 @@ package src.GUI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
 
+import src.Exceptions.InvalidPositionError;
 import src.Game.*;
 
+/**
+ * The class for the game GUI.
+ */
 public class GameGUI {
-    private final int TILE_GAP = 2;
     private final Color TILE_COLOR = new Color(220, 220, 220);
     private final Color PLAYER_COLOR = new Color(154, 216, 252);
     private final Color ENEMY_COLOR = new Color(247, 116, 106);
     private Board BOARD;
     
     public final JFrame root = new JFrame("Game");
-    public JButton[][] boardTiles;
-    public JPanel boardPanel;
+    public JLabel boardPanel;
+
+    private GameKeyListener listener = new GameKeyListener();
 
     /**
      * Base consctructor.
@@ -26,6 +31,10 @@ public class GameGUI {
 
     public void setBoard(Board board) {
         BOARD = board;
+    }
+
+    public Board getBoard() {
+        return BOARD;
     }
 
     /**
@@ -42,23 +51,16 @@ public class GameGUI {
      * Initializes basic properties for the {@code Board} window panel.
      */
     private void initBoard() {
-        boardTiles = new JButton[BOARD.getHeight()][BOARD.getWidth()];
-        boardPanel = new JPanel(new GridLayout(BOARD.getHeight(), BOARD.getWidth(), TILE_GAP, TILE_GAP));
-        int tileSize = 50;
-        for (int y = 0; y < boardTiles.length; y++) {
-            for (int x = 0; x < boardTiles[y].length; x++) {
-                JButton tile = new JButton();
-                tile.setBackground(TILE_COLOR);
-                tile.setMargin(new Insets(1, 1, 1, 1));
-                tile.setBorder(null);
-                ImageIcon icon = new ImageIcon(new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB));
-                tile.setIcon(icon);
-
-                boardTiles[y][x] = tile;
-                boardPanel.add(boardTiles[y][x]);
-            }
-        }
+        boardPanel = new JLabel(BOARD.getHTMLBoard());
         root.add(boardPanel);
+    }
+
+    /**
+     * Initiliazes the listeners for the {@code Frame} window application.
+     */
+    private void initListeners() {
+        root.addKeyListener(listener);
+        root.setFocusable(true);
     }
 
     /**
@@ -67,10 +69,70 @@ public class GameGUI {
     public void init() {
         initRoot();
         initBoard();
+        initListeners();
 
         root.pack();
         root.setMinimumSize(root.getSize());
         root.setVisible(true);
     }
+
+    /**
+     * Updates the {@code char[][]} board array.
+     */
+    private void updateBoard() {
+        boardPanel.setText(BOARD.getHTMLBoard());
+    }
+
+    /**
+     * Implements the interface {@code KeyAdapater}.
+     */
+    private class GameKeyListener extends KeyAdapter {
+        private final static int LEFT = 37;
+        private final static int UP = 38;
+        private final static int RIGHT = 39;
+        private final static int DOWN = 40;
+    
+        @Override
+        public void keyTyped(KeyEvent e) {
+        }
+    
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int keyCode = e.getKeyCode();
+            System.out.println(keyCode);
+            try {
+                switch (keyCode) {
+                    case LEFT:
+                        BOARD.getPlayer().setSymbol('<');
+                        BOARD.movePlayer(new int[] {-1, 0});
+                        break;
+                    case UP:
+                        BOARD.getPlayer().setSymbol('^');
+                        BOARD.movePlayer(new int[] {0, -1});
+                        break;
+                    case RIGHT:
+                        BOARD.getPlayer().setSymbol('>');
+                        BOARD.movePlayer(new int[] {1, 0});
+                        break;
+                    case DOWN:
+                        BOARD.getPlayer().setSymbol('v');
+                        BOARD.movePlayer(new int[] {0, 1});
+                        break;
+                }
+                
+                BOARD.moveEnemies();
+                updateBoard();
+                BOARD.nextTurn();
+            } catch (InvalidPositionError err) {
+                /** Add an animation or effect if the player tries to move to an invalid position? */
+            }
+        }
+    
+        @Override
+        public void keyReleased(KeyEvent e) {
+        }
+    }
+    
+    
 
 }
