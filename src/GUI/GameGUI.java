@@ -1,68 +1,76 @@
 package src.GUI;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.awt.event.KeyAdapter;
+import java.io.File;
 
-import src.Exceptions.InvalidPositionError;
+import src.Exceptions.*;
 import src.Game.*;
 
 /**
- * The class for the game GUI.
+ * To-Do:
+ *  - Try to make the fonts work with the board
+ */
+
+/**
+ * The {@code GameGUI} class creates a window to graphicly display the board
+ * and control the player movements.
+ * 
+ * @since JDK 1.11
+ * @version 1.0
+ * 
+ * @see src.Game.Board Board
  */
 public class GameGUI {
-    private final Color TILE_COLOR = new Color(220, 220, 220);
-    private final Color PLAYER_COLOR = new Color(154, 216, 252);
-    private final Color ENEMY_COLOR = new Color(247, 116, 106);
 
+    /**
+     * The board to be displayed in the GUI.
+     */
     private Board BOARD;
 
-    private final JFrame root = new JFrame("Game");
-    public JLabel boardPanel;
-/*
-    private GameKeyListener listener = new GameKeyListener();
-*/
     /**
-     * Base consctructor.
+     * The root window for the application.
+     */
+    private final JFrame root = new JFrame("Game");
+
+    /**
+     * The panel to embed the board.
+     */
+    public JLabel boardPanel;
+
+    /**
+     * The key listener for keyboard events.
+     */
+    private GameKeyListener listener = new GameKeyListener();
+
+    /**
+     * Constructs the GameGUI from the specified board.
+     * @param board - The specified board
      */
     public GameGUI(Board board) {
         BOARD = board;
     }
 
+    /**
+     * Sets the board of the GUI to the specified board.
+     * @param board - The board to set
+     */
     public void setBoard(Board board) {
         BOARD = board;
     }
 
+    /**
+     * Returns the board of the GUI.
+     * @return The board of the GUI
+     */
     public Board getBoard() {
         return BOARD;
     }
-/*
-    public void setFont(String path) {
-        try {
-            font =  Font.createFont(Font.TRUETYPE_FONT, new File(path)).deriveFont(Font.PLAIN, 20f);
-            ge.registerFont(font);
-        } catch (Exception err) {
-            System.out.println(err);
-        }
-    }*/
-    /*
-    public Font getFont(String name) {
-        System.out.println(name);
-        for (Font font : ge.getAllFonts()) {
-            System.out.println(font);
-            if (name.equals(font.getFontName())) {
-                return font;
-            }
-        }
-        return null;
-    }*/
 
     /**
-     * Initializes basic properties for the root {@code Frame} window application.
-     * @param width - The width of the {@code Frame}
-     * @param height - The height of the {@code Frame}
+     * Initializes basic properties for the root window.
      */
     private void initRoot() {
         root.setLayout(new FlowLayout());
@@ -70,23 +78,23 @@ public class GameGUI {
     }
 
     /**
-     * Initializes basic properties for the {@code Board} window panel.
-     *//*
+     * Initializes basic properties for the board panel.
+     */
     private void initBoard() {
-        boardPanel = new JLabel(BOARD.getHTMLBoard());
+        boardPanel = new JLabel(BOARD.toHTMLString());
         root.add(boardPanel);
     }
 
     /**
-     * Initiliazes the listeners for the {@code Frame} window application.
-     *//*
+     * Initiliazes the listeners for the window.
+     */
     private void initListeners() {
         root.addKeyListener(listener);
         root.setFocusable(true);
     }
 
     /**
-     * Initializes the fonts for the {@code Frame} window application
+     * Initializes the fonts for the window.
      */
     private void initFont() {
         String path = "F:\\Proyectos\\Java\\BoardGame\\src\\Fonts\\Roboto.ttf";
@@ -103,15 +111,13 @@ public class GameGUI {
 
 
     /**
-     * Initializes the basic properties for the GUI.
-     *//*
-    public void init() {
+     * Runs the main window application.
+     */
+    public void run() {
         initRoot();
         initBoard();
-        initFont();
+        //initFont();
         initListeners();
-
-        System.out.println(boardPanel.getFont());
 
         root.pack();
         root.setMinimumSize(root.getSize());
@@ -119,15 +125,15 @@ public class GameGUI {
     }
 
     /**
-     * Updates the {@code char[][]} board array.
-     *//*
+     * Updates the JPanel board array.
+     */
     private void updateBoard() {
-        boardPanel.setText(BOARD.getHTMLBoard());
+        boardPanel.setText(BOARD.toHTMLString());
     }
 
     /**
-     * Implements the interface {@code KeyAdapater}.
-     *//*
+     * Implements the interface {@code KeyAdapater} for the keyboard events.
+     */
     private class GameKeyListener extends KeyAdapter {
         private final static int LEFT = 37;
         private final static int UP = 38;
@@ -141,39 +147,28 @@ public class GameGUI {
         @Override
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
-            try {
-                switch (keyCode) {
-                    case LEFT:
-                        BOARD.getPlayer().setSymbol('<');
-                        BOARD.movePlayer(new int[] {-1, 0});
-                        break;
-                    case UP:
-                        BOARD.getPlayer().setSymbol('^');
-                        BOARD.movePlayer(new int[] {0, -1});
-                        break;
-                    case RIGHT:
-                        BOARD.getPlayer().setSymbol('>');
-                        BOARD.movePlayer(new int[] {1, 0});
-                        break;
-                    case DOWN:
-                        BOARD.getPlayer().setSymbol('v');
-                        BOARD.movePlayer(new int[] {0, 1});
-                        break;
-                }
-                
-                BOARD.moveEnemies();
-                updateBoard();
-                BOARD.nextTurn();
-            } catch (InvalidPositionError err) {
-                /** Add an animation or effect if the player tries to move to an invalid position? */
-            /*}
+            switch (keyCode) {
+                case LEFT:
+                    BOARD.movePlayer(new int[] {-1, 0});
+                    break;
+                case UP:
+                    BOARD.movePlayer(new int[] {0, -1});
+                    break;
+                case RIGHT:
+                    BOARD.movePlayer(new int[] {1, 0});
+                    break;
+                case DOWN:
+                    BOARD.movePlayer(new int[] {0, 1});
+                    break;
+            }
+            
+            BOARD.moveEnemies();
+            updateBoard();
+            BOARD.nextTurn();
         }
     
         @Override
         public void keyReleased(KeyEvent e) {
         }
     }
-    */
-    
-
 }

@@ -8,13 +8,11 @@ import java.util.NoSuchElementException;
  * 
  * <p>Comes with a wide variety of functions for array manipulation.
  * 
+ * @param <E> the type of elements in the array
+ * 
  * @since JDK 1.11
  * @version 1.0
  * 
- * @see {@link src.Logic.DynamicArray#DynamicArray DynamicArray()}
- * @see {@link src.Logic.DynamicArray#push(Object, int) push(Object, int)}
- * @see {@link src.Logic.DynamicArray#pop() pop()}
- * @see {@link src.Logic.DynamicArray#get(int) get(int)}
  */
 public class DynamicArray<E> implements Iterable<E> {
     /**
@@ -160,9 +158,10 @@ public class DynamicArray<E> implements Iterable<E> {
      */
     public boolean pop(Object o, int max) {
         int occurences = 0;
-        for (int i = 0; i < size() && occurences <= max; i++) {
+        for (int i = 0; i < size() && occurences < max; i++) {
             if (get(i).equals(o)) {
                 pop(i);
+                i--;
                 occurences++;
             }
         }
@@ -215,22 +214,22 @@ public class DynamicArray<E> implements Iterable<E> {
     }
 
     /**
-     * Returns a sublist of the array between the specified indexes,
-     * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.
+     * Returns a subarray of the array between the range, {@code fromIndex},
+     * and {@code toIndex}, both inclusive.
      * (If {@code fromIndex} and {@code toIndex} are equal, the returned
-     * array is empty).
+     * array is constructed from the index at that position).
      * @param fromIndex - The start of the range
      * @param toIndex - The end of the range
-     * @return
+     * @return The subarray constructed from the specified range
      */
     public DynamicArray<E> sublist(int fromIndex, int toIndex) {
         if (fromIndex > toIndex) {
             throw new IndexOutOfBoundsException("fromIndex must be lower than toIndex");
         }
 
-        DynamicArray<E> result = new DynamicArray<>(toIndex-fromIndex);
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.set(i, get(i));
+        DynamicArray<E> result = new DynamicArray<>(toIndex-fromIndex+1);
+        for (int i = 0; i < toIndex-fromIndex+1; i++) {
+            result.set(i, get(i+fromIndex));
         }
         return result;
     }
@@ -274,15 +273,16 @@ public class DynamicArray<E> implements Iterable<E> {
 
     /**
      * Returns the index of the first occurence of the specified element
-     * on the array between the range, {@code start}, inclusive, and {@code end},
-     * exclusive, or -1 if there is no such index.
+     * on the array between the range, {@code start}, and {@code end},
+     * both inclusive, or -1 if there is no such index.
      * @param o - The element to search
      * @param start - The start of the range
      * @param end - The end of the range
-     * @return The index of the first occurente of the specified element on the array
+     * @return The index of the first occurence of the specified element on the array
+     * @throws ArrayIndexOutOfBoundsException if {@code start < 0}
      */
     public int indexOfRange(Object o, int start, int end) {
-        for (int i = start; i < end; i++) {
+        for (int i = start; i <= end; i++) {
             if (o == null || o.equals(get(i))) {
                 return i;
             }
@@ -297,20 +297,21 @@ public class DynamicArray<E> implements Iterable<E> {
      * @return The index of the first occurente of the specified element on the array
      */
     public int indexOf(Object o) {
-        return indexOfRange(o, 0, size());
+        return indexOfRange(o, 0, size()-1);
     }
 
     /**
      * Returns the index of the last occurence of the specified element
-     * on the array between the range, {@code start}, inclusive, and {@code end},
-     * exclusive, or -1 if there is no such index.
+     * on the array between the range, {@code start}, and {@code end},
+     * both inclusive, or -1 if there is no such index.
      * @param o - The element to search
      * @param start - The start of the range
      * @param end - The end of the range
      * @return The index of the last occurence of the specified element on the array
+     * @throws ArrayIndexOutOfBoundsException if {@code end >= array.size()}
      */
     public int lastIndexOfRange(Object o, int start, int end) {
-        for (int i = end-1; i >= start; i--) {
+        for (int i = end; i >= start; i--) {
             if (o == null || o.equals(get(i))) {
                 return i;
             }
@@ -325,7 +326,7 @@ public class DynamicArray<E> implements Iterable<E> {
      * @return The index of the last occurence of the specified element on the array
      */
     public int lastIndexOf(Object o) {
-        return lastIndexOfRange(o, 0, size());
+        return lastIndexOfRange(o, 0, size()-1);
     }
 
 
