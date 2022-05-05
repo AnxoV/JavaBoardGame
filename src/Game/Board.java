@@ -37,6 +37,11 @@ import src.Exceptions.*;
 public class Board {
 
     /**
+     * Object of the {@link java.util.Random Random} class.
+     */
+    private Random rand = new Random();
+
+    /**
      * The value corresponding an empty tile on the board.
      */
     protected char BLANK = ' ';
@@ -408,13 +413,12 @@ public class Board {
 
     /**
      * Iterates through the enemies array moving them towards the player.
+     * If the player is within reach of the enemy, it attacks him.
      * 
-     * <p>If the player is within reach of the enemy, it attacks him.
-     * 
-     * <p>An enemy takes two turns to move one tile.
+     * <p>An enemy may move in a turn or not, it is randomly calculated.
      */
     public void moveEnemies() {
-        if (turn % 2 == 0) {
+        if (rand.nextInt(10) <= 4) {
             int[] playerPos = player.getPosition();
             for (Character enemy : enemies) {
                 int[] enemyPos = enemy.getPosition();

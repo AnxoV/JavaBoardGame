@@ -4,6 +4,11 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
+ * To-Do:
+ *  - Chekc if the static method contains can be recycled
+ */
+
+/**
  * Dynamic implemention of the Java Array.
  * 
  * <p>Comes with a wide variety of functions for array manipulation.
@@ -18,13 +23,14 @@ public class DynamicArray<E> implements Iterable<E> {
     /**
      * The array buffer to store the elements of the DynamicArray.
      */
-    Object[] array;
+    private E[] array;
 
     /**
-     * Constructs an empty array with an initial capacity of 10.
+     * Constructs an empty array with an initial capacity of 0.
      */
+    @SuppressWarnings("unchecked")
     public DynamicArray() {
-        array = new Object[10];
+        array = (E[]) new Object[0];
     }
 
     /**
@@ -32,12 +38,26 @@ public class DynamicArray<E> implements Iterable<E> {
      * @param size the new size of the array
      * @throws IllegalArgumentException if the specified initial capacity is negative
      */
+    @SuppressWarnings("unchecked")
     public DynamicArray(int initialCapacity) {
         if (initialCapacity >= 0) {
-            array = new Object[initialCapacity];
+            array = (E[]) new Object[initialCapacity];
         } else {
             throw new IllegalArgumentException("Illegal capacity: " + initialCapacity);
         }
+    }
+
+    /**
+     * Returns the array of the object.
+     * @return The array of the object 
+     */
+    public E[]  toArray() {
+        int size = size();
+        E[] result = (E[]) new Object[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = (E) array[i]; 
+        }
+        return result;
     }
 
     /**
@@ -84,7 +104,6 @@ public class DynamicArray<E> implements Iterable<E> {
      * @return The element at the specified position in the array
      * @throws IndexOutOfBoundsException If the index is outside the array boundaries
      */
-    @SuppressWarnings("unchecked")
     public E get(int index) throws IndexOutOfBoundsException {
         return (E) array[index];
     }
@@ -92,11 +111,11 @@ public class DynamicArray<E> implements Iterable<E> {
     /**
      * Modifies the element at the specified position in the array to element.
      * @param index - Index of the element to modify
-     * @param o - The element to set the value of
+     * @param element - The element to set the value of
      * @throws IndexOutOfBoundsException If the index is outside the array boundaries
      */
-    public void set(int index, Object o) throws IndexOutOfBoundsException {
-        array[index] = o;
+    public void set(int index, E element) throws IndexOutOfBoundsException {
+        array[index] = element;
     }
 
 
@@ -104,15 +123,15 @@ public class DynamicArray<E> implements Iterable<E> {
      * Inserts an element at the specified position in the array.
      * Shifts the element currently at that position and subsequent
      * elements to the right.
-     * @param o - The element to add
      * @param index - The position in the array
+     * @param element - The element to add
      */
-    public void push(Object o, int index) {
+    public void push(int index, E element) {
         DynamicArray<E> result = new DynamicArray<>(size()+1);
         for (int i = 0; i < index; i++) {
             result.set(i, get(i));
         }
-        result.set(index, o);
+        result.set(index, element);
         for (int i = index; i < size(); i++) {
             result.set(i+1, get(i));
         }
@@ -121,10 +140,10 @@ public class DynamicArray<E> implements Iterable<E> {
 
     /**
      * Adds an element after the last position in the array.
-     * @param o - The element to add
+     * @param element - The element to add
      */
-    public void push(Object o) {
-        push(o, size());
+    public void push(E element) {
+        push(size(), element);
     }
 
 
@@ -152,14 +171,14 @@ public class DynamicArray<E> implements Iterable<E> {
 
     /**
      * Removes the first <b>n</b> elements found in the array.
-     * @param o - The element to remove
+     * @param element - The element to remove
      * @param max - The maximum number of elements to be removed
      * @return {@code true} if the array contained the specified element;
      */
-    public boolean pop(Object o, int max) {
+    public boolean pop(E element, int max) {
         int occurences = 0;
         for (int i = 0; i < size() && occurences < max; i++) {
-            if (get(i).equals(o)) {
+            if (get(i).equals(element)) {
                 pop(i);
                 i--;
                 occurences++;
@@ -173,20 +192,20 @@ public class DynamicArray<E> implements Iterable<E> {
 
     /**
      * Removes the first occurence of an element from the array.
-     * @param o - The element to remove
+     * @param element - The element to remove
      * @return {@code true} if the array contained the specified element;
      */
-    public boolean pop(Object o) {
-        return pop(o, 1);
+    public boolean pop(E element) {
+        return pop(element, 1);
     }
 
     /**
      * Removes all the occurences of a specified element in the array.
-     * @param o - The element to remove
+     * @param element - The element to remove
      * @return {@code true} if the array contained the specified element;
      */
-    public boolean popAll(Object o) {
-        return pop(o, Integer.MAX_VALUE);
+    public boolean popAll(E element) {
+        return pop(element, Integer.MAX_VALUE);
     }
 
     /**
@@ -247,13 +266,13 @@ public class DynamicArray<E> implements Iterable<E> {
 
     /**
      * Reteurns the number of occurences of a specified element in the array.
-     * @param o - The element to search for
+     * @param element - The element to search for
      * @return The number of occurences found in the array
      */
-    public int count(Object o) {
+    public int count(E element) {
         int count = 0;
         for (int i = 0; i < size(); i++) {
-            if (array[i].equals(o)) {
+            if (array[i].equals(element)) {
                 count++;
             }
         }
@@ -275,15 +294,15 @@ public class DynamicArray<E> implements Iterable<E> {
      * Returns the index of the first occurence of the specified element
      * on the array between the range, {@code start}, and {@code end},
      * both inclusive, or -1 if there is no such index.
-     * @param o - The element to search
+     * @param element - The element to search
      * @param start - The start of the range
      * @param end - The end of the range
      * @return The index of the first occurence of the specified element on the array
      * @throws ArrayIndexOutOfBoundsException if {@code start < 0}
      */
-    public int indexOfRange(Object o, int start, int end) {
+    public int indexOfRange(E element, int start, int end) {
         for (int i = start; i <= end; i++) {
-            if (o == null || o.equals(get(i))) {
+            if (element == null || element.equals(get(i))) {
                 return i;
             }
         }
@@ -293,26 +312,26 @@ public class DynamicArray<E> implements Iterable<E> {
     /**
      * Returns the index of the first occurence of the specified element on the array
      * or -1 if there is no such index.
-     * @param o - The element to search
+     * @param element - The element to search
      * @return The index of the first occurente of the specified element on the array
      */
-    public int indexOf(Object o) {
-        return indexOfRange(o, 0, size()-1);
+    public int indexOf(E element) {
+        return indexOfRange(element, 0, size()-1);
     }
 
     /**
      * Returns the index of the last occurence of the specified element
      * on the array between the range, {@code start}, and {@code end},
      * both inclusive, or -1 if there is no such index.
-     * @param o - The element to search
+     * @param element - The element to search
      * @param start - The start of the range
      * @param end - The end of the range
      * @return The index of the last occurence of the specified element on the array
      * @throws ArrayIndexOutOfBoundsException if {@code end >= array.size()}
      */
-    public int lastIndexOfRange(Object o, int start, int end) {
+    public int lastIndexOfRange(E element, int start, int end) {
         for (int i = end; i >= start; i--) {
-            if (o == null || o.equals(get(i))) {
+            if (element == null || element.equals(get(i))) {
                 return i;
             }
         }
@@ -322,21 +341,21 @@ public class DynamicArray<E> implements Iterable<E> {
     /**
      * Returns the index of the last occurence of the specified element on the array
      * or -1 if there is no such index. 
-     * @param o - The element to search
+     * @param element - The element to search
      * @return The index of the last occurence of the specified element on the array
      */
-    public int lastIndexOf(Object o) {
-        return lastIndexOfRange(o, 0, size()-1);
+    public int lastIndexOf(E element) {
+        return lastIndexOfRange(element, 0, size()-1);
     }
 
 
     /**
      * Returns {@code true} if the array contains the specified element.
-     * @param o - The element to search
+     * @param element - The element to search
      * @return {@code true} if the array contains the specified element
      */
-    public boolean contains(Object o) {
-        return indexOf(o) >= 0;
+    public boolean contains(E element) {
+        return indexOf(element) >= 0;
     }
     
     /**
@@ -387,15 +406,50 @@ public class DynamicArray<E> implements Iterable<E> {
             return cursor != size();
         }
         
-        @SuppressWarnings("unchecked")
         public E next() {
             int i = cursor;
             if (i >= size()) {
                 throw new NoSuchElementException();
             }
             cursor++;
-            return (E) array[cursor-1];
+            return array[cursor-1];
         }
     }
 
+
+    /**
+     * Maps the array to an int array.
+     * @return The mapped int array
+     */
+    public int[] mapToInt() {
+        int size = size();
+        int[] result = new int[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = (int) get(i);
+        }
+        return result;
+    }
+
+    /**
+     * Maps the specified array to an int array.
+     * @param array - The specified array to map
+     * @return The mapped int array
+     */
+    public static <E> int[] mapToInt(E[] array) {
+        int size = array.length;
+        int[] result = new int[size];
+        for (int i = 0; i < size; i++){
+            result[i] = (int) array[i];
+        }
+        return result;
+    }
+
+    /**
+     * Maps the specified array to an int array.
+     * @param array - The specified array to map
+     * @return The mapped int array
+     */
+    public static <E> int[] mapToInt(DynamicArray<E> array) {
+        return mapToInt(array.toArray());
+    }
 }
