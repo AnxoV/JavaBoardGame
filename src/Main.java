@@ -8,9 +8,10 @@ import src.Game.Character;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+
         Board board = new Board(9, 9);
         board.spawnPlayer(Character.Knight);
-        board.spawnEnemy(Character.Bat);
+        board.spawnEnemy(new int[]{0, 0}, Character.Bat);
         GameGUI gameGUI = new GameGUI(board);
         
         Runnable r = new Runnable() {
@@ -20,14 +21,5 @@ public class Main {
             }
         };
         SwingUtilities.invokeLater(r);
-
-        /*
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-            }
-        }, 1000);
-        */
     }
 }

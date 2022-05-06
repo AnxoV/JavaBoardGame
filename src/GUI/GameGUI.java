@@ -5,8 +5,9 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import src.Exceptions.*;
 import src.Game.*;
 
 /**
@@ -44,6 +45,21 @@ public class GameGUI {
      * The key listener for keyboard events.
      */
     private GameKeyListener listener = new GameKeyListener();
+
+    /**
+     * Indicates if the attack view animation is running.
+     */
+    private boolean iddle = false;
+
+    /**
+     * Indicates wether to show or not the view attack board when the player is iddle
+     */
+    private boolean showView = true;
+
+    /**
+     * The timer for window animations
+     */
+    Timer timer;
 
     /**
      * Constructs the GameGUI from the specified board.
@@ -97,10 +113,10 @@ public class GameGUI {
      * Initializes the fonts for the window.
      */
     private void initFont() {
-        String path = "F:\\Proyectos\\Java\\BoardGame\\src\\Fonts\\Roboto.ttf";
+        String path = "src\\Fonts\\Caladan.ttf";
         try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, new File(path)).deriveFont(24f);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            Font font = Font.createFont(Font.TRUETYPE_FONT, new File(path)).deriveFont(10f);
             ge.registerFont(font);
             boardPanel.setFont(font);
             root.setFont(font);
@@ -109,6 +125,8 @@ public class GameGUI {
         }
     }
 
+    
+
 
     /**
      * Runs the main window application.
@@ -116,7 +134,7 @@ public class GameGUI {
     public void run() {
         initRoot();
         initBoard();
-        //initFont();
+        initFont();
         initListeners();
 
         root.pack();
@@ -127,9 +145,32 @@ public class GameGUI {
     /**
      * Updates the JPanel board array.
      */
-    private void updateBoard() {
-        boardPanel.setText(BOARD.toHTMLString());
+    private void updateBoard(String boardString) {
+        boardPanel.setText(boardString);
     }
+
+    /**
+     * Returns the attack view of the board, marking the tiles the player has view of.
+     * @return The attack view of the board
+     */
+    private char[][] getViewAttackBoard() {
+        char[][] viewAttackBoard = new char[BOARD.getHeight()][BOARD.getWidth()];
+        char[][] board = BOARD.getBoard();
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                viewAttackBoard[y][x] = board[y][x];
+            }
+        }
+        int[] position = BOARD.getPlayer().getPosition();
+        int range = BOARD.getPlayer().getRange();
+        int[][] viewLineCoords = BOARD.getViewLineCoordinates(position, range);
+        for (int i = 0; i < viewLineCoords.length; i++) {
+            int[] coord = viewLineCoords[i];
+            viewAttackBoard[coord[1]][coord[0]] = 'x';
+        }
+        return viewAttackBoard;
+    }
+
 
     /**
      * Implements the interface {@code KeyAdapater} for the keyboard events.
@@ -139,6 +180,7 @@ public class GameGUI {
         private final static int UP = 38;
         private final static int RIGHT = 39;
         private final static int DOWN = 40;
+        private final static int ENTER = 10;
     
         @Override
         public void keyTyped(KeyEvent e) {
@@ -147,24 +189,60 @@ public class GameGUI {
         @Override
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
-            switch (keyCode) {
-                case LEFT:
-                    BOARD.movePlayer(new int[] {-1, 0});
-                    break;
-                case UP:
-                    BOARD.movePlayer(new int[] {0, -1});
-                    break;
-                case RIGHT:
-                    BOARD.movePlayer(new int[] {1, 0});
-                    break;
-                case DOWN:
-                    BOARD.movePlayer(new int[] {0, 1});
-                    break;
+            if (BOARD.getplayerMove()) {
+                switch (keyCode) {
+                    case LEFT:
+                        BOARD.movePlayer(new int[] {-1, 0});
+                        break;
+                    case UP:
+                        BOARD.movePlayer(new int[] {0, -1});
+                        break;
+                    case RIGHT:
+                        BOARD.movePlayer(new int[] {1, 0});
+                        break;
+                    case DOWN:
+                        BOARD.movePlayer(new int[] {0, 1});
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (!BOARD.getplayerMove()) {
+                if (!iddle) {
+                    timer = new Timer();
+                    iddle = true;
+                    timer.scheduleAtFixedRate(new TimerTask () {
+                        @Override
+                        public void run() {
+                            if (showView) {
+                                updateBoard(BOARD.toHTMLString());
+                            } else {
+                                updateBoard(BOARD.toHTMLString(getViewAttackBoard()));
+                            }
+                            showView = !showView;
+                        };
+                    }, 0, 500);
+                } else {
+                    switch (keyCode) {
+                        case LEFT:
+                        case UP:
+                        case RIGHT:
+                        case DOWN:
+                            BOARD.attackInRange(keyCode);
+                        case ENTER:
+                            iddle = false;
+                            timer.cancel();
+                        default:
+                            break;
+                    }
+                }
             }
             
-            BOARD.moveEnemies();
-            updateBoard();
-            BOARD.nextTurn();
+            if (!BOARD.getplayerMove() && !iddle) {
+                BOARD.moveEnemies();
+                BOARD.nextTurn();
+            }
+            updateBoard(BOARD.toHTMLString());
         }
     
         @Override

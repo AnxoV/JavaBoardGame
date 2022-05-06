@@ -2,8 +2,9 @@ package src.Game;
 
 import java.util.Random;
 
-import src.Logic.*;
 import src.Exceptions.*;
+import src.Logic.*;
+import src.Pathfinder.*;
 
 /**
  * To-Do:
@@ -49,7 +50,7 @@ public class Board {
     /**
      * The value corresponding a board border.
      */
-    protected char BORDER = '#';
+    protected char BORDER = '*';
 
     /**
      * The value corresponding a dead character.
@@ -77,6 +78,21 @@ public class Board {
      * Indicates which turn currently is.
      */
     private int turn = 0;
+
+    /**
+     * Indicates the number of times the player has moved this turno.
+     */
+    private int numMove;
+
+    /**
+     * Indicates if the player can move.
+     */
+    private boolean playerMove = true;
+
+    /**
+     * Indicates the number of points the player has earned this game.
+     */
+    private int points;
 
     /**
      * Constructs a 5 x 5 empty board.
@@ -198,6 +214,54 @@ public class Board {
      */
     public int getTurn() {
         return turn;
+    }
+
+    /**
+     * Returns the move of the player.
+     * @return The move of the player
+     */
+    public boolean getplayerMove() {
+        return playerMove;
+    }
+
+    /**
+     * Sets the move of the player.
+     * @param playerMove - The move to set
+     */
+    public void setplayerMove(boolean playerMove) {
+        this.playerMove = playerMove;
+    }
+
+    /**
+     * Returns the number of times the player has moved this turn.
+     * @return The number of times the player has moved this turn
+     */
+    public int getnumMove() {
+        return numMove;
+    }
+
+    /**
+     * Sets the number of player moves.
+     * @param numMove - The moves to set
+     */
+    public void setnumMove(int numMove) {
+        this.numMove = numMove;
+    }
+
+    /**
+     * Returns the number of points the player has earned this game.
+     * @return The number of points the player has earned this game
+     */
+    public int getPoints() {
+        return points;
+    }
+
+    /**
+     * Sets the number of points of the game.
+     * @param points - The points to set
+     */
+    public void setPoints(int points) {
+        this.points = points;
     }
 
 
@@ -356,8 +420,96 @@ public class Board {
      * @param character - The character to check
      * @return A boolean representing the lifeness of the character
      */
-    private boolean isDead(Character character) {
-        return player.getHp() < 1;
+    public boolean isDead(Character character) {
+        return character.getHp() < 1;
+    }
+
+    /**
+     * Returns the coordinates that are in line range from a given position.
+     * @param coordinate - The specified position
+     * @param range - The range of the line
+     * @return The coordinates that are in range from the position
+     */
+    public int[][] getLineCoordinates(int[] coordinate, int range) {
+        int[][] lineCoords = new int[range*4][2];
+        int i = 0;
+        for (int x = -range; x <= range; x++) {
+            if (x != 0) {
+                lineCoords[i] = Operator.sum(coordinate, new int[]{x, 0});
+                i++;
+            }
+        }
+        for (int y = -range; y <= range; y++) {
+            if (y != 0) {
+                lineCoords[i] = Operator.sum(coordinate, new int[]{0, y});
+                i++;
+            }
+        }
+        return lineCoords;
+    }
+
+    /**
+     * Returns the line of vision on range from a given position.
+     * @param coordinate - The specified position
+     * @param range - The range of the view
+     * @return The coordinates that are in view (not blocked by non-empty tiles)
+     */
+    public int[][] getViewLineCoordinates(int[] coordinate, int range) {
+        DynamicArray<int[]> viewCoords = new DynamicArray<>();
+        boolean blockedView = false;
+        for (int x = -1; x >= -range && !blockedView; x--) {
+            int[] viewCoord = Operator.sum(coordinate, new int[]{x, 0});
+            if (!validateCoordinate(viewCoord)) {
+                blockedView = true;
+            } else {
+                viewCoords.push(viewCoord);
+            }
+        }
+        blockedView = false;
+        for (int x = 1; x <= range && !blockedView; x++) {
+            int[] viewCoord = Operator.sum(coordinate, new int[]{x, 0});
+            if (!validateCoordinate(viewCoord)) {
+                blockedView = true;
+            } else {
+                viewCoords.push(viewCoord);
+            }
+        }
+        blockedView = false;
+        for (int y = -1; y >= -range && !blockedView; y--) {
+            int[] viewCoord = Operator.sum(coordinate, new int[]{0, y});
+            if (!validateCoordinate(viewCoord)) {
+                blockedView = true;
+            } else {
+                viewCoords.push(viewCoord);
+            }
+        }
+        blockedView = false;
+        for (int y = 1; y <= range && !blockedView; y++) {
+            int[] viewCoord = Operator.sum(coordinate, new int[]{0, y});
+            if (!validateCoordinate(viewCoord)) {
+                blockedView = true;
+            } else {
+                viewCoords.push(viewCoord);
+            }
+        }
+        int[][] viewCoordsArray = new int[viewCoords.size()][2];
+        for (int i = 0; i < viewCoords.size(); i++) {
+            viewCoordsArray[i] = viewCoords.get(i);
+        }
+        return viewCoordsArray;
+    }
+
+    /**
+     * Returns wether a target is in range of a character.
+     * @param character - The character
+     * @param target - The target to check
+     * @return {@code true} if the target is in range of the character, {@code false} otherwise
+     */
+    private boolean isInRange(Character character, Character target) {
+        int range = character.getRange();
+        int[][] lineCoords = getLineCoordinates(character.getPosition(), range);
+        if (Operator.contains(target.getPosition(), lineCoords)) return true;
+        return false;
     }
 
     /**
@@ -366,18 +518,86 @@ public class Board {
      * @param target - The character to be attacked
      * @return Wether or not the attack took place
      */
-    private boolean attack(Character character, Character target) {
-        boolean attacked = false;
-        if (Operator.contains(target.getPosition(), getAdjacentCoords(player))) {
-            target.setHp(target.getHp()-player.getDamage());
+    private void attack(Character character, Character target) {
+        target.setHp(target.getHp()-character.getDamage());
 
-            if (isDead(target)) {
-                int[] targetPosition = target.getPosition();
-                board[targetPosition[1]][targetPosition[0]] = BLANK;
+        if (isDead(target)) {
+            int[] targetPosition = target.getPosition();
+            board[targetPosition[1]][targetPosition[0]] = BLANK;
+            if (!target.equals(player)) {
+                enemies.pop(target);
             }
-            attacked = true;
         }
-        return attacked;
+    }
+
+    /**
+     * Returns the enemy from the given position on the board.
+     * @param coord - The specified position
+     * @return The enemy in that position
+     */
+    private Character getEnemy(int[] coord) {
+        try {
+            if (board[coord[1]][coord[0]] != BLANK && board[coord[1]][coord[0]] != BORDER) {
+                for (Character enemy : enemies) {
+                    if (Operator.equals(enemy.getPosition(), coord)) return enemy;
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {}
+        return null;
+    }
+
+    /**
+     * Returns the first enemy found on the given direction from the player in range
+     * @param direction - The specified direction
+     * @return The first enemy found
+     */
+    private Character getFirstEnemy(int direction) {
+        final int LEFT = 37;
+        final int UP = 38;
+        final int RIGHT = 39;
+        final int DOWN = 40;
+        Character enemy = null;
+        int range = player.getRange();
+        switch (direction) {
+            case LEFT:
+                for (int x = -1; x >= -range; x--) {
+                    int[] coord = Operator.sum(player.getPosition(), new int[]{x, 0});
+                    enemy = getEnemy(coord);
+                } 
+                break;
+            case RIGHT:
+                for (int x = 1; x <= range; x++) {
+                    int[] coord = Operator.sum(player.getPosition(), new int[]{x, 0});
+                    enemy = getEnemy(coord);
+                }
+                break;
+            case UP:
+                for (int y = -1; y >= -range; y--) {
+                    int[] coord = Operator.sum(player.getPosition(), new int[]{0, y});
+                    enemy = getEnemy(coord);
+                } 
+                break;
+            case DOWN:
+                for (int y = 1; y <= range; y++) {
+                    int[] coord = Operator.sum(player.getPosition(), new int[]{0, y});
+                    enemy = getEnemy(coord);
+                }
+                break;
+            default:
+                break;
+        }
+        return enemy;
+    }
+
+    /**
+     * Attacks the first enemy found in the line direction from the player.
+     * @param direction - The keycode representing the arrow direction of the attack
+     */
+    public void attackInRange(int direction) {
+        Character enemy = getFirstEnemy(direction);
+        if (enemy != null) {
+            attack(player, enemy);
+        }
     }
 
 
@@ -388,17 +608,15 @@ public class Board {
      * @return Wether the move executed correctly or not
      */
     public boolean move(Character character, int[] vector) {
-        boolean moved = true;
         int[] currentPosition = character.getPosition();
         int[] nextPosition = Operator.sum(currentPosition, vector);
         if (validateCoordinate(nextPosition)) {
             board[currentPosition[1]][currentPosition[0]] = BLANK;
             character.setPosition(nextPosition);
             board[nextPosition[1]][nextPosition[0]] = character.getSymbol();
-        } else {
-            moved = false;
+            return true;
         }
-        return moved;
+        return false;
     }
 
     /**
@@ -407,13 +625,42 @@ public class Board {
      * @return Wether the move executed correctly or not
      */
     public boolean movePlayer(int[] vector) {
+        if (isDead(player)) return false;
+        numMove++;
+        if (numMove >= player.getMovePoints()) {
+            playerMove = false;
+        }
         return move(player, vector);
     }
 
+    /**
+     * Returns the array resulting of converting any non-empty
+     * tiles apart from the character to BLANK.
+     * @param character - The character to get the view of
+     * @return The view of the character
+     */
+    private char[][] getCharacterBoardView(Character character) {
+        char[][] boardView = new char[board.length][board[0].length];
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                int[] coord = new int[]{x, y};
+                char tile = board[y][x];
+                if (tile != BLANK
+                    && tile != player.getSymbol()
+                    && !Operator.equals(coord, character.getPosition())
+                ) {
+                    boardView[y][x] = BORDER;
+                } else {
+                    boardView[y][x] = BLANK;
+                }
+            }
+        }
+        return boardView;
+    }
 
     /**
      * Iterates through the enemies array moving them towards the player.
-     * If the player is within reach of the enemy, it attacks him.
+     * If the player is within reach of the enemy, they attack him.
      * 
      * <p>An enemy may move in a turn or not, it is randomly calculated.
      */
@@ -422,27 +669,21 @@ public class Board {
             int[] playerPos = player.getPosition();
             for (Character enemy : enemies) {
                 int[] enemyPos = enemy.getPosition();
-                if (Operator.contains(playerPos, getAdjacentCoords(enemy))) {
+                if (isInRange(enemy, player)) {
                     attack(enemy, player);
                 } else {
-                    int[] distanceFromTarget = Operator.substract(enemyPos, playerPos);
-                    distanceFromTarget = Operator.unsign(distanceFromTarget);
-        
-                    int[] vector = new int[2];
-        
-                    if (distanceFromTarget[0] >= distanceFromTarget[1]) {
-                        vector[0] = enemy.getMovePoints();
-                        if (enemyPos[0] > playerPos[0]) {
-                            vector[0] *= -1;
-                        }
-                    } else if (distanceFromTarget[0] < distanceFromTarget[1]) {
-                        vector[1] = enemy.getMovePoints();
-                        if (enemyPos[1] > playerPos[1]) {
-                            vector[1] *= -1;
-                        }
-                    }
+                    char[][] enemyBoardView = getCharacterBoardView(enemy);
+
+                    A a = new A(enemyBoardView);
+                    Point enemyPoint = new Point(enemyPos, null);
+                    Point playerPoint = new Point(playerPos, null);
+                    DynamicArray<Point> path = a.path(enemyPoint, playerPoint);
                     
-                    move(enemy, vector);
+                    int[] nextPosition = path.get(0).coordinate;
+                    board[enemyPos[1]][enemyPos[0]] = BLANK;
+                    enemy.setPosition(nextPosition);
+                    enemyPos = enemy.getPosition();
+                    board[enemyPos[1]][enemyPos[0]] = enemy.getSymbol();
                 }
             }
         }
@@ -452,6 +693,8 @@ public class Board {
      * Advances to the next turn.
      */
     public void nextTurn() {
+        numMove = 0;
+        playerMove = true;
         turn++;
     }
 
@@ -482,13 +725,37 @@ public class Board {
     }
 
     /**
+     * Builds an HTML encoded string representing the board and characters from a given board array.
+     * @param board - The specified board array
+     * @return The stylished board string
+     */
+    public String toHTMLString(char[][] board) {
+        String string = "<html><style>@font-face {font-family: Caladan; src: url(\"src\\Fonts\\Caladan.ttf\");} pre {font-family: \"Caladan\";}</style><pre>";
+        for (int i = 0; i < board[0].length+2; i++) {
+            string += BORDER + " ";
+        }
+        string += "\n";
+        for (char[] row : board) {
+            string += BORDER + " ";
+            for (char c : row) {
+                string += c + " ";
+            }
+            string += BORDER + "\n";
+        }
+
+        for (int i = 0; i < board[0].length+2; i++) {
+            string += BORDER + " ";
+        }
+        string += "</pre></html>";
+        return string;
+    }
+
+    /**
      * Builds an HTML encoded string representing the board and characters.
      * @return The stylished board string
      */
     public String toHTMLString() {
-        return "<html><pre>"
-                + toString()
-                + "</pre></html>";
+        return toHTMLString(board);
     }
 
 }

@@ -368,7 +368,7 @@ public class DynamicArray<E> implements Iterable<E> {
             return true;
         }
 
-        if (!(isSameSize(array))) {
+        if (!isSameSize(array)) {
             return false;
         }
 

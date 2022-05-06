@@ -14,12 +14,12 @@ public enum Character {
     /**
      * The main character class.
      */
-    Knight(5, 2, 1, 'K'),
+    Knight(5, 2, 1, 2, 'k'),
     
     /**
      * The main enemy class.
      */
-    Bat(1, 1, 1, 'M');
+    Bat(1, 1, 1, 1, 'm');
 
     /**
      * The position of the character.
@@ -42,6 +42,11 @@ public enum Character {
     private int movePoints;
 
     /**
+     * The range of the character.
+     */
+    private int range;
+
+    /**
      * The symbol of the character.
      */
     private char symbol;
@@ -52,13 +57,15 @@ public enum Character {
      * @param hp - The hp of the character
      * @param damage - The damage of the character
      * @param movePoints - The movePoints of the character
+     * @param range - The range of the character
      * @param symbol - The symbol of the character
      */
-    private Character(int hp, int damage, int movePoints, char symbol) {
+    private Character(int hp, int damage, int movePoints, int range, char symbol) {
         position = new int[]{0, 0};
         this.hp = hp;
         this.damage = damage;
         this.movePoints = movePoints;
+        this.range = range;
         this.symbol = symbol;
     }
 
@@ -127,6 +134,22 @@ public enum Character {
     }
 
     /**
+     * Returns the range of the character.
+     * @return The range of the character
+     */
+    public int getRange() {
+        return range;
+    }
+
+    /**
+     * Sets the range of the character.
+     * @param range - The range to set
+     */
+    public void setRange(int range) {
+        this.range = range;
+    }
+
+    /**
      * Returns the symbol of the character.
      * @return the symbol of the character
      */
@@ -150,6 +173,7 @@ public enum Character {
     @Override
     public String toString() {
         return "{"
+                    + "position: (" + position[0] + ", " + position[1] + "), "
                     + "hp: " + hp + ", "
                     + "damage: " + damage + ", "
                     + "movePoints: " + movePoints + ", "
