@@ -18,7 +18,7 @@ import src.pathfinder.*;
   * <p> A board is an object that stores the data of the game.
   * 
   * <p>It may have one player and one or more enemies.
-  * Both player and enemy objects are created from the {@link src.game.Character Character} enum.
+  * Both player and enemy objects are created from the {@link src.game.Player Player} class.
   * 
   * <p>The most basic {@link src.game.Board#Board() constructor} creates a basic
   * 5 x 5 grid with the default character values. This class implements different
@@ -31,61 +31,55 @@ import src.pathfinder.*;
   * @since JDK 1.11
   * @version 1.0
   * 
-  * @see src.game.Character Character
+  * @see src.game.Player Player
   * @see src.logic.DynamicArray DynamicArray
   * @see src.logic.Operator Operator
   */
 public class Board {
 
-    /**
-     * Object of the {@link java.util.Random Random} class.
-     */
     private Random rand = new Random();
 
     /**
-     * The value corresponding an empty tile on the board.
+     * An empty tile on the board.
      */
     private char BLANK = ' ';
 
     /**
-     * The value corresponding a board border.
+     * A board border.
      */
     private char BORDER = '*';
 
     /**
-     * The value corresponding a dead character.
-     */
-    private char DEAD = '-';
-
-    /**
-     * The values of the board.
+     * The values of the tiles.
      */
     private char[][] board;
 
     /**
      * The main player.
-     * @see src.game.Character Character
+     * @see src.game.Player Player
      */
-    private Character player;
+    private Player player;
 
     /**
-     * Copies the player character.
+     * A copy of the main player player default values.
+     * 
+     * <p>It is used in case of resetting the game.
      */
-    private Character copyPlayer;
+    private Player copyPlayer;
 
     /**
-     * The array of enemies on the board.
-     * @see src.game.Character Character
+     * The enemies on the board.
+     * @see src.game.Player Player
      */
-    private DynamicArray<Character> enemies = new DynamicArray<>(0);
+    private DynamicArray<Player> enemies = new DynamicArray<>(0);
 
     /**
-     * Indicates which turn currently is.
+     * The current turn.
      */
     private int turn = 0;
 
     /**
-     * Indicates the number of times the player has moved this turno.
+     * The number of times the player has moved this turn.
      */
     private int numMove;
 
@@ -95,7 +89,7 @@ public class Board {
     private boolean playerMove = true;
 
     /**
-     * Indicates the number of points the player has earned this game.
+     * The number of points the player has earned this game.
      */
     private int points;
 
@@ -121,32 +115,28 @@ public class Board {
      * Constructs a full-custom board.
      * 
      * <p>Defines width and height of the board, as well as the different
-     * chars used for filling the board.
+     * tile characters used for filling the board.
      * 
      * @param width - The width of the board
      * @param height - The height of the board
      * @param BLANK - The BLANK tile value
      * @param BORDER - The BORDER tile value
-     * @param DEAD - The DEAD tile value
      */
-    public Board(int width, int height, char BLANK, char BORDER, char DEAD) {
+    public Board(int width, int height, char BLANK, char BORDER) {
         board = new char[height][width];
         fillBlank();
         this.BLANK = BLANK;
         this.BORDER = BORDER;
-        this.DEAD = DEAD;
     }
 
     /**
-     * Returns the board array of the board.
-     * @return The board array of the board
+     * @return The board aray
      */
     public char[][] getBoard() {
         return board;
     }
 
     /**
-     * Returns the width of the board.
      * @return The width of the board
      */
     public int getWidth() {
@@ -154,7 +144,6 @@ public class Board {
     }
 
     /**
-     * Returns the height of the board.
      * @return The height of the board
      */
     public int getHeight() {
@@ -172,25 +161,23 @@ public class Board {
     }
 
     /**
-     * Returns the main player.
      * @return The main player
-     * @see src.game.Character Character
+     * @see src.game.Player Player
      */
-    public Character getPlayer() {
+    public Player getPlayer() {
         return player;
     }
 
     /**
-     * Returns the array of enemies on the board.
-     * @return A {@code DynamicArray<Character>} of the enemies on the board
-     * @see src.game.Character Character
+     * @return The enemies on the board
+     * @see src.game.Player Player
+     * @see src.logic.DynamicArray DynamicArray
      */
-    public DynamicArray<Character> getEnemies() {
+    public DynamicArray<Player> getEnemies() {
         return enemies;
     }
 
     /**
-     * Returns the BLANK tile.
      * @return The BLANK tile
      */
     public char getBlank() {
@@ -198,23 +185,14 @@ public class Board {
     }
 
     /**
-     * Returns the BORDER tile.
      * @return The BORDER tile
      */
     public char getBorder() {
         return BORDER;
     }
 
-    /**
-     * Returns the DEAD tile.
-     * @return The DEAD tile
-     */
-    public char getDead() {
-        return DEAD;
-    }
 
     /**
-     * Returns the current turn of the board.
      * @return The current turn of the board
      */
     public int getTurn() {
@@ -222,7 +200,6 @@ public class Board {
     }
 
     /**
-     * Returns the move of the player.
      * @return The move of the player
      */
     public boolean getplayerMove() {
@@ -230,15 +207,14 @@ public class Board {
     }
 
     /**
-     * Sets the move of the player.
-     * @param playerMove - The move to set
+     * @param playerMove - {@code true} means the player has more moves,
+     * {@code false} indicates otherwise
      */
     public void setplayerMove(boolean playerMove) {
         this.playerMove = playerMove;
     }
 
     /**
-     * Returns the number of times the player has moved this turn.
      * @return The number of times the player has moved this turn
      */
     public int getnumMove() {
@@ -246,15 +222,14 @@ public class Board {
     }
 
     /**
-     * Sets the number of player moves.
-     * @param numMove - The moves to set
+     * Sets the number of times the player has moved.
+     * @param numMove - The number to set
      */
     public void setnumMove(int numMove) {
         this.numMove = numMove;
     }
 
     /**
-     * Returns the number of points the player has earned this game.
      * @return The number of points the player has earned this game
      */
     public int getPoints() {
@@ -262,7 +237,7 @@ public class Board {
     }
 
     /**
-     * Sets the number of points of the game.
+     * Sets the number of points the player has earned this game
      * @param points - The points to set
      */
     public void setPoints(int points) {
@@ -286,7 +261,7 @@ public class Board {
     /**
      * Checks wether a tile is BLANK and inside of the board.
      * @param coordinate - The coordinate to check
-     * @return A boolean representing if the given coordinate is valid
+     * @return {@code true} if the coordinate is valid, {@code false} otherwise
      */
     public boolean validateCoordinate(int[] coordinate) {
         boolean valid = true;
@@ -306,16 +281,16 @@ public class Board {
      * @param coordinate - The coordinate to spawn the player at
      * @param typeClass - The class of the player
      * @throws InvalidPositionError If the coordinate is not valid
-     * @see src.game.Character Character
+     * @see src.game.Player Player
      */
-    public void spawnPlayer(int[] coordinate, Character typeClass) throws InvalidPositionError {
+    public void spawnPlayer(int[] coordinate, Player typeClass) throws InvalidPositionError {
         if (!validateCoordinate(coordinate)) {
             throw new InvalidPositionError("Can't spawn the player at that position."
                                         + "The position is not empty or is outside the boards boundaries");
         }
         player = typeClass;
         player.setPosition(coordinate);
-        copyPlayer = new Character(player.getHp(),
+        copyPlayer = new Player(player.getHp(),
                                     player.getDamage(),
                                     player.getMovePoints(),
                                     player.getRange(),
@@ -327,16 +302,15 @@ public class Board {
      * Tries to spawn the main player at the center of the board.
      * @param typeClass - The class of the player
      * @throws InvalidPositionError If the coordinate is not valid
-     * @see src.game.Character Character
+     * @see src.game.Player Player
      */
-    public void spawnPlayer(Character typeClass) throws InvalidPositionError {
+    public void spawnPlayer(Player typeClass) throws InvalidPositionError {
         spawnPlayer(getCenter(), typeClass);
     }
 
 
     /**
-     * Generates a random coordinate at the side of the board.
-     * @return A random {@code int[]} coordinate at the side of the board
+     * @return A random coordinate at the side of the board
      */
     private int[] getRandomBorderCoordinate() {
         Random rand = new Random();
@@ -364,11 +338,11 @@ public class Board {
      * @param coordinate - The coordinate to spawn the enemy at
      * @throws InvalidSpawnPosition If the coordinate is not valid
      */
-    public void spawnEnemy(int[] coordinate, Character typeClass) throws InvalidPositionError {
+    public void spawnEnemy(int[] coordinate, Player typeClass) throws InvalidPositionError {
         if (!validateCoordinate(coordinate)) {
             throw new InvalidPositionError("Can't spawn the enemy at that position. The position is not empty or is outside the boards boundaries");
         }
-        Character enemy = typeClass;
+        Player enemy = typeClass;
         enemy.setPosition(coordinate);
         board[coordinate[1]][coordinate[0]] = enemy.getSymbol();
         enemies.push(enemy);
@@ -378,7 +352,7 @@ public class Board {
      * Tries to spawn an enemy at a random border coordinate.
      * @throws InvalidPositionError If the coordinate is not valid
      */
-    public void spawnEnemy(Character typeClass) throws InvalidPositionError {
+    public void spawnEnemy(Player typeClass) throws InvalidPositionError {
         spawnEnemy(getRandomBorderCoordinate(), typeClass);
     }
 
@@ -404,12 +378,12 @@ public class Board {
     }
 
     /**
-     * Returns all the adjacent coordinates relative to a character.
-     * @param character - The character to get the adjacent coordinates from
-     * @return An array of adjacent coordinates ordered by UP, DOWN, LEFT, RIGHT
+     * Returns all the adjacent coordinates relative to a Player.
+     * @param player - The Player to get the adjacent coordinates from
+     * @return The adjacent coordinates ordered by UP, DOWN, LEFT, RIGHT
      */
-    public int[][] getAdjacentCoords(Character character) {
-        int[] position = character.getPosition();
+    public int[][] getAdjacentCoords(Player player) {
+        int[] position = player.getPosition();
         int[][] adjacentCoords = new int[4][2];
         Direction[] directions = Direction.values();
         for (int i = 0; i < directions.length; i++) {
@@ -426,16 +400,16 @@ public class Board {
 
 
     /**
-     * Checks if the hp of a character is below or equal to 0.
-     * @param character - The character to check
-     * @return A boolean representing the lifeness of the character
+     * Checks if the hp of a Player is below or equal to 0.
+     * @param player - The Player to check
+     * @return {@code true} if {@code player.getHp() <= 0}, {@code false} otherwise
      */
-    public boolean isDead(Character character) {
-        return character.getHp() < 1;
+    public boolean isDead(Player player) {
+        return player.getHp() < 1;
     }
 
     /**
-     * Returns the coordinates that are in line range from a given position.
+     * Returns the coordinates that are in line from a given position and range.
      * @param coordinate - The specified position
      * @param range - The range of the line
      * @return The coordinates that are in range from the position
@@ -510,32 +484,31 @@ public class Board {
     }
 
     /**
-     * Returns wether a target is in range of a character.
-     * @param character - The character
+     * Returns wether a target is in range of a Player.
+     * @param player - The Player
      * @param target - The target to check
-     * @return {@code true} if the target is in range of the character, {@code false} otherwise
+     * @return {@code true} if the target is in range of the Player, {@code false} otherwise
      */
-    private boolean isInRange(Character character, Character target) {
-        int range = character.getRange();
-        int[][] lineCoords = getLineCoordinates(character.getPosition(), range);
+    private boolean isInRange(Player player, Player target) {
+        int range = player.getRange();
+        int[][] lineCoords = getLineCoordinates(player.getPosition(), range);
         if (Operator.contains(target.getPosition(), lineCoords)) return true;
         return false;
     }
 
     /**
-     * Attacks a character if it is within reach.
-     * @param character - The character who attacks
-     * @param target - The character to be attacked
-     * @return Wether or not the attack took place
+     * Attacks a Player if it is within reach.
+     * @param player - The Player who attacks
+     * @param target - The Player to be attacked
      */
-    private void attack(Character character, Character target) {
-        target.setHp(target.getHp()-character.getDamage());
+    private void attack(Player player, Player target) {
+        target.setHp(target.getHp()-player.getDamage());
 
         if (!target.equals(player)) {
-            if (character.getDamage() <= target.getHp()) {
-                points += character.getDamage();
+            if (player.getDamage() <= target.getHp()) {
+                points += player.getDamage();
             } else {
-                points += character.getDamage()-target.getHp();
+                points += player.getDamage()-target.getHp();
             }
         }
 
@@ -551,12 +524,13 @@ public class Board {
     /**
      * Returns the enemy from the given position on the board.
      * @param coord - The specified position
-     * @return The enemy in that position
+     * @return The enemy in that position,
+     * or {@code null} there is no enemy
      */
-    private Character getEnemy(int[] coord) {
+    private Player getEnemy(int[] coord) {
         try {
             if (board[coord[1]][coord[0]] != BLANK && board[coord[1]][coord[0]] != BORDER) {
-                for (Character enemy : enemies) {
+                for (Player enemy : enemies) {
                     if (Operator.equals(enemy.getPosition(), coord)) return enemy;
                 }
             }
@@ -569,12 +543,12 @@ public class Board {
      * @param direction - The specified direction
      * @return The first enemy found
      */
-    private Character getFirstEnemy(int direction) {
+    private Player getFirstEnemy(int direction) {
         final int LEFT = 37;
         final int UP = 38;
         final int RIGHT = 39;
         final int DOWN = 40;
-        Character enemy = null;
+        Player enemy = null;
         int range = player.getRange();
         switch (direction) {
             case LEFT:
@@ -610,28 +584,31 @@ public class Board {
     /**
      * Attacks the first enemy found in the line direction from the player.
      * @param direction - The keycode representing the arrow direction of the attack
+     * @return {@code true} if the attack took place, {@code false} otherwise
      */
-    public void attackInRange(int direction) {
-        Character enemy = getFirstEnemy(direction);
+    public boolean attackInRange(int direction) {
+        Player enemy = getFirstEnemy(direction);
         if (enemy != null) {
             attack(player, enemy);
+            return true;
         }
+        return false;
     }
 
 
     /**
-     * Moves a character with the force of an {x, y} vector.
-     * @param character - The character to move
-     * @param vector - The force to move the character with
-     * @return Wether the move executed correctly or not
+     * Moves a Player with the force of an {x, y} vector.
+     * @param player - The Player to move
+     * @param vector - The force to move the Player with
+     * @return {@code true} if the player moved, {@code false} otherwise
      */
-    public boolean move(Character character, int[] vector) {
-        int[] currentPosition = character.getPosition();
+    public boolean move(Player player, int[] vector) {
+        int[] currentPosition = player.getPosition();
         int[] nextPosition = Operator.sum(currentPosition, vector);
         if (validateCoordinate(nextPosition)) {
             board[currentPosition[1]][currentPosition[0]] = BLANK;
-            character.setPosition(nextPosition);
-            board[nextPosition[1]][nextPosition[0]] = character.getSymbol();
+            player.setPosition(nextPosition);
+            board[nextPosition[1]][nextPosition[0]] = player.getSymbol();
             return true;
         }
         return false;
@@ -640,7 +617,7 @@ public class Board {
     /**
      * Moves the player with the force of an {x, y} vector.
      * @param vector - The force to move the player with
-     * @return Wether the move executed correctly or not
+     * @return {@code true} if the player moved, {@code false} otherwise
      */
     public boolean movePlayer(int[] vector) {
         if (isDead(player)) return false;
@@ -653,20 +630,17 @@ public class Board {
 
     /**
      * Returns the array resulting of converting any non-empty
-     * tiles apart from the character to BLANK.
-     * @param character - The character to get the view of
-     * @return The view of the character
+     * tiles apart from the Player to BLANK.
+     * @param player - The Player to get the view of
+     * @return The view of the Player
      */
-    private char[][] getCharacterBoardView(Character character) {
+    private char[][] getPlayerBoardView(Player player) {
         char[][] boardView = new char[board.length][board[0].length];
         for (int y = 0; y < board.length; y++) {
             for (int x = 0; x < board[y].length; x++) {
                 int[] coord = new int[]{x, y};
                 char tile = board[y][x];
-                if (tile != BLANK
-                    && tile != player.getSymbol()
-                    && !Operator.equals(coord, character.getPosition())
-                ) {
+                if (tile == BORDER || getEnemy(coord) != null) {
                     boardView[y][x] = BORDER;
                 } else {
                     boardView[y][x] = BLANK;
@@ -678,31 +652,36 @@ public class Board {
 
     /**
      * Iterates through the enemies array moving them towards the player.
-     * If the player is within reach of the enemy, they attack him.
+     * If the player is within reach of the enemy, it attack hims.
      * 
      * <p>An enemy may move in a turn or not, it is randomly calculated.
+     * ncreasing exponentially as the player gets more points.
      */
     public void moveEnemies() {
         int[] playerPos = player.getPosition();
-        for (Character enemy : enemies) {
+        for (Player enemy : enemies) {
             if (rand.nextInt(10) <= 4) {
                 int[] enemyPos = enemy.getPosition();
                 if (isInRange(enemy, player)) {
                     attack(enemy, player);
                 } else {
-                    char[][] enemyBoardView = getCharacterBoardView(enemy);
+                    char[][] enemyBoardView = getPlayerBoardView(enemy);
                     try {
                         A a = new A(enemyBoardView);
                         Point enemyPoint = new Point(enemyPos, null);
                         Point playerPoint = new Point(playerPos, null);
                         DynamicArray<Point> path = a.path(enemyPoint, playerPoint);
                         
-                        int[] nextPosition = path.get(0).coordinate;
-                        board[enemyPos[1]][enemyPos[0]] = BLANK;
-                        enemy.setPosition(nextPosition);
-                        enemyPos = enemy.getPosition();
-                        board[enemyPos[1]][enemyPos[0]] = enemy.getSymbol();
-                    } catch (Exception e) {}
+                        if (path != null) {
+                            int[] nextPosition = path.get(enemy.getMovePoints()-1).coordinate;
+                            board[enemyPos[1]][enemyPos[0]] = BLANK;
+                            enemy.setPosition(nextPosition);
+                            enemyPos = enemy.getPosition();
+                            board[enemyPos[1]][enemyPos[0]] = enemy.getSymbol();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -715,11 +694,15 @@ public class Board {
         numMove = 0;
         playerMove = true;
         turn++;
-        if (rand.nextInt(101) <= (Math.pow(points, 2)+20) || enemies.size() == 0) {
-            try {
-                spawnEnemy(new Character(1, 1, 1, 1, 'm'));
-            } catch (Exception e) {}
-        }
+        double chance = 0.01*Math.pow(points, 2)+25;
+        do {
+            if (rand.nextInt(100)+1 <= chance) {
+                try {
+                    spawnEnemy(new Player(1, 1, 1, 1, 'm'));
+                } catch (Exception e) {}
+                chance -= 100;
+            }
+        } while (chance > 100 || enemies.size() == 0);
     }
 
     /**
@@ -748,12 +731,12 @@ public class Board {
         clearBord();
         try {
             spawnPlayer(player);
-            spawnEnemy(new Character(1, 1, 1, 1, 'm'));
+            spawnEnemy(new Player(1, 1, 1, 1, 'm'));
         } catch(Exception e){}
     }
 
     /**
-     * Returns a string representing the board and characters.
+     * Returns a string representing the board and Players.
      * @return The stylished board string
      */
     @Override
@@ -779,7 +762,7 @@ public class Board {
     }
 
     /**
-     * Builds an HTML encoded string representing the board and characters from a given board array.
+     * Builds an HTML encoded string representing the board and Players from a given board array.
      * @param board - The specified board array
      * @return The stylished board string
      */
@@ -810,7 +793,7 @@ public class Board {
     }
 
     /**
-     * Builds an HTML encoded string representing the board and characters.
+     * Builds an HTML encoded string representing the board and Players.
      * @return The stylished board string
      */
     public String toHTMLString() {

@@ -2,15 +2,15 @@ package src.game;
 
 import java.awt.*;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Timer;
@@ -30,22 +30,29 @@ public class Gui {
     private Board BOARD;
     private HashMap<String, Font> fonts = new HashMap<>();
 
+    // Application component tree
     private JFrame rootFrame;
     /**/private JPanel mainPanel;
     /****/private JLabel titleLabel;
-    /****/private JLabel startLabel;
+    /****/private JPanel startPanel;
+    /******/private JLabel startLabel;
+    /******/private JLabel meritLabel;
     /****/private JLabel endLabel;
     /****/private JPanel gamePanel;
     /******/private JLabel statsLabel;
     /******/private JLabel boardLabel;
 
-    private Clip clip;
+    // Used for managing the game audio
+    private Clip music;
+    private Clip effects;
     
     
     private boolean showView = false;
     private boolean iddle = false;
     private boolean run = false;
     private boolean ended = false;
+
+    private HashMap<String, AudioInputStream> audioEffects = new HashMap<>();
     
     
     private GameKeyListener listener = new GameKeyListener();
@@ -59,8 +66,6 @@ public class Gui {
     public void setBoard(Board board) {
         BOARD = board;
     }
-
-
 
 
     private void initFonts() {
@@ -83,12 +88,26 @@ public class Gui {
 
     private void initMusic() {
         try {
-            clip = AudioSystem.getClip();
-            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("src\\Audio\\bso\\xDeviruchi - Decisive Battle.wav"));
-            clip.open(inputStream);
-            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            music = AudioSystem.getClip();
+            audioEffects.put("decisive_battle",
+                AudioSystem.getAudioInputStream(new File("src\\Audio\\bso\\Decisive Battle\\xDeviruchi - Decisive Battle (Loop).wav")));
+            music.open(audioEffects.get("decisive_battle"));
+            FloatControl gainControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
+            gainControl.setValue(-20.0f);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initAudioEffects() {
+        try {
+            effects = AudioSystem.getClip();
+            audioEffects.put("player_hit",
+                AudioSystem.getAudioInputStream(new File("src\\Audio\\effects\\player_hit.wav")));
+            effects.open(audioEffects.get("player_hit"));
+            FloatControl gainControl = (FloatControl) effects.getControl(FloatControl.Type.MASTER_GAIN);
             gainControl.setValue(-10.0f);
-            clip.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -112,8 +131,8 @@ public class Gui {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
+        mainPanel.setSize(rootFrame.getPreferredSize());
         mainPanel.setOpaque(false);
-        mainPanel.setSize(rootFrame.getSize());
         rootFrame.add(mainPanel);
     }
 
@@ -125,17 +144,36 @@ public class Gui {
     }
 
     private void initStart() {
+        startPanel = new JPanel();
+        startPanel.setLayout(new BoxLayout(startPanel, BoxLayout.Y_AXIS));
+        startPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
         startLabel = new JLabel("<html>"
                                 + "<style>"
-                                    + "body {text-align: center; margin-top: 60px;}"
+                                    + "body {text-align: center;}"
                                 + "</style>"
                                 + "<body>"
                                     + "Presiona <b>Enter</b> para empezar o <b>Escape</b> para salir"
                                 + "</body>"
                             + "</html>");
+        meritLabel = new JLabel("<html>"
+                                + "<style>"
+                                    + "body {text-align: center; width: 525px; margin-top: 175px;}"
+                                + "</style>"
+                                + "<body>"
+                                    + "Música por <b>xDeviruchi</b>"
+                                + "</body>"
+                            + "</html>");
+
         startLabel.setFont(rootFrame.getFont().deriveFont(40f));
-        startLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(startLabel);
+
+        meritLabel.setFont(rootFrame.getFont().deriveFont(24f));
+
+        startPanel.setPreferredSize(mainPanel.getSize());
+        startPanel.setOpaque(false);
+
+        startPanel.add(startLabel);
+        startPanel.add(meritLabel);
+        mainPanel.add(startPanel);
     }
 
     private void initEnd() {
@@ -186,6 +224,7 @@ public class Gui {
     public void run() {
         initFonts();
         initMusic();
+        initAudioEffects();
         initRoot();
         initMain();
         initTitle();
@@ -224,7 +263,7 @@ public class Gui {
     }
 
     private String getPlayerStats() {
-        Character player = BOARD.getPlayer();
+        Player player = BOARD.getPlayer();
         return "<html>"
                 + "<style>"
                     + "body {border: 5px dashed #333; padding: 20px; margin-left: 20px;}"
@@ -255,6 +294,7 @@ public class Gui {
         private void windowControls(int keyCode) {
             switch (keyCode) {
                 case ESC:
+                    music.stop();
                     rootFrame.dispose();
                     break;
                 default:
@@ -267,7 +307,7 @@ public class Gui {
                 case ENTER:
                     run = true;
                     gamePanel.setVisible(true);
-                    startLabel.setVisible(false);
+                    startPanel.setVisible(false);
             }
         }
 
@@ -313,7 +353,14 @@ public class Gui {
                     case UP:
                     case RIGHT:
                     case DOWN:
-                        BOARD.attackInRange(keyCode);
+                        if (BOARD.attackInRange(keyCode)) {
+                            try {
+                                effects.setFramePosition(0);
+                                effects.start();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     case ENTER:
                         iddle = false;
                         timer.cancel();
@@ -335,7 +382,7 @@ public class Gui {
             switch (keyCode) {
                 case ENTER:
                     ended = false;
-                    run = false;
+                    run = true;
                     gamePanel.setVisible(true);
                     endLabel.setVisible(false);
                     BOARD.reset();
