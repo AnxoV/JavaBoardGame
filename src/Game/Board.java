@@ -1,10 +1,10 @@
-package src.Game;
+package src.game;
 
 import java.util.Random;
 
-import src.Exceptions.*;
-import src.Logic.*;
-import src.Pathfinder.*;
+import src.exceptions.*;
+import src.logic.*;
+import src.pathfinder.*;
 
 /**
  * To-Do:
@@ -18,22 +18,22 @@ import src.Pathfinder.*;
   * <p> A board is an object that stores the data of the game.
   * 
   * <p>It may have one player and one or more enemies.
-  * Both player and enemy objects are created from the {@link src.Game.Character Character} enum.
+  * Both player and enemy objects are created from the {@link src.game.Character Character} enum.
   * 
-  * <p>The most basic {@link src.Game.Board#Board() constructor} creates a basic
+  * <p>The most basic {@link src.game.Board#Board() constructor} creates a basic
   * 5 x 5 grid with the default character values. This class implements different
   * methods to manage what happens on the board and how it is displayed.
   * 
-  * <p>It is dependant on the {@link src.Logic.Operator Operator} class to perform
-  * basic operations within the grid. And on the {@link src.Logic.DynamicArray DynamicArray}
+  * <p>It is dependant on the {@link src.logic.Operator Operator} class to perform
+  * basic operations within the grid. And on the {@link src.logic.DynamicArray DynamicArray}
   * class to create the enemies array.
   * 
   * @since JDK 1.11
   * @version 1.0
   * 
-  * @see src.Game.Character Character
-  * @see src.Logic.DynamicArray DynamicArray
-  * @see src.Logic.Operator Operator
+  * @see src.game.Character Character
+  * @see src.logic.DynamicArray DynamicArray
+  * @see src.logic.Operator Operator
   */
 public class Board {
 
@@ -45,34 +45,39 @@ public class Board {
     /**
      * The value corresponding an empty tile on the board.
      */
-    protected char BLANK = ' ';
+    private char BLANK = ' ';
 
     /**
      * The value corresponding a board border.
      */
-    protected char BORDER = '*';
+    private char BORDER = '*';
 
     /**
      * The value corresponding a dead character.
      */
-    protected char DEAD = '-';
+    private char DEAD = '-';
 
     /**
      * The values of the board.
      */
-    protected char[][] board;
+    private char[][] board;
 
     /**
      * The main player.
-     * @see src.Game.Character Character
+     * @see src.game.Character Character
      */
-    protected Character player;
+    private Character player;
+
+    /**
+     * Copies the player character.
+     */
+    private Character copyPlayer;
 
     /**
      * The array of enemies on the board.
-     * @see src.Game.Character Character
+     * @see src.game.Character Character
      */
-    protected DynamicArray<Character> enemies = new DynamicArray<>(0);
+    private DynamicArray<Character> enemies = new DynamicArray<>(0);
 
     /**
      * Indicates which turn currently is.
@@ -169,7 +174,7 @@ public class Board {
     /**
      * Returns the main player.
      * @return The main player
-     * @see src.Game.Character Character
+     * @see src.game.Character Character
      */
     public Character getPlayer() {
         return player;
@@ -178,7 +183,7 @@ public class Board {
     /**
      * Returns the array of enemies on the board.
      * @return A {@code DynamicArray<Character>} of the enemies on the board
-     * @see src.Game.Character Character
+     * @see src.game.Character Character
      */
     public DynamicArray<Character> getEnemies() {
         return enemies;
@@ -301,7 +306,7 @@ public class Board {
      * @param coordinate - The coordinate to spawn the player at
      * @param typeClass - The class of the player
      * @throws InvalidPositionError If the coordinate is not valid
-     * @see src.Game.Character Character
+     * @see src.game.Character Character
      */
     public void spawnPlayer(int[] coordinate, Character typeClass) throws InvalidPositionError {
         if (!validateCoordinate(coordinate)) {
@@ -310,6 +315,11 @@ public class Board {
         }
         player = typeClass;
         player.setPosition(coordinate);
+        copyPlayer = new Character(player.getHp(),
+                                    player.getDamage(),
+                                    player.getMovePoints(),
+                                    player.getRange(),
+                                    player.getSymbol());
         board[coordinate[1]][coordinate[0]] = player.getSymbol();
     }
 
@@ -317,7 +327,7 @@ public class Board {
      * Tries to spawn the main player at the center of the board.
      * @param typeClass - The class of the player
      * @throws InvalidPositionError If the coordinate is not valid
-     * @see src.Game.Character Character
+     * @see src.game.Character Character
      */
     public void spawnPlayer(Character typeClass) throws InvalidPositionError {
         spawnPlayer(getCenter(), typeClass);
@@ -521,6 +531,14 @@ public class Board {
     private void attack(Character character, Character target) {
         target.setHp(target.getHp()-character.getDamage());
 
+        if (!target.equals(player)) {
+            if (character.getDamage() <= target.getHp()) {
+                points += character.getDamage();
+            } else {
+                points += character.getDamage()-target.getHp();
+            }
+        }
+
         if (isDead(target)) {
             int[] targetPosition = target.getPosition();
             board[targetPosition[1]][targetPosition[0]] = BLANK;
@@ -560,25 +578,25 @@ public class Board {
         int range = player.getRange();
         switch (direction) {
             case LEFT:
-                for (int x = -1; x >= -range; x--) {
+                for (int x = -1; x >= -range && enemy == null; x--) {
                     int[] coord = Operator.sum(player.getPosition(), new int[]{x, 0});
                     enemy = getEnemy(coord);
                 } 
                 break;
             case RIGHT:
-                for (int x = 1; x <= range; x++) {
+                for (int x = 1; x <= range && enemy == null; x++) {
                     int[] coord = Operator.sum(player.getPosition(), new int[]{x, 0});
                     enemy = getEnemy(coord);
                 }
                 break;
             case UP:
-                for (int y = -1; y >= -range; y--) {
+                for (int y = -1; y >= -range && enemy == null; y--) {
                     int[] coord = Operator.sum(player.getPosition(), new int[]{0, y});
                     enemy = getEnemy(coord);
                 } 
                 break;
             case DOWN:
-                for (int y = 1; y <= range; y++) {
+                for (int y = 1; y <= range && enemy == null; y++) {
                     int[] coord = Operator.sum(player.getPosition(), new int[]{0, y});
                     enemy = getEnemy(coord);
                 }
@@ -665,25 +683,26 @@ public class Board {
      * <p>An enemy may move in a turn or not, it is randomly calculated.
      */
     public void moveEnemies() {
-        if (rand.nextInt(10) <= 4) {
-            int[] playerPos = player.getPosition();
-            for (Character enemy : enemies) {
+        int[] playerPos = player.getPosition();
+        for (Character enemy : enemies) {
+            if (rand.nextInt(10) <= 4) {
                 int[] enemyPos = enemy.getPosition();
                 if (isInRange(enemy, player)) {
                     attack(enemy, player);
                 } else {
                     char[][] enemyBoardView = getCharacterBoardView(enemy);
-
-                    A a = new A(enemyBoardView);
-                    Point enemyPoint = new Point(enemyPos, null);
-                    Point playerPoint = new Point(playerPos, null);
-                    DynamicArray<Point> path = a.path(enemyPoint, playerPoint);
-                    
-                    int[] nextPosition = path.get(0).coordinate;
-                    board[enemyPos[1]][enemyPos[0]] = BLANK;
-                    enemy.setPosition(nextPosition);
-                    enemyPos = enemy.getPosition();
-                    board[enemyPos[1]][enemyPos[0]] = enemy.getSymbol();
+                    try {
+                        A a = new A(enemyBoardView);
+                        Point enemyPoint = new Point(enemyPos, null);
+                        Point playerPoint = new Point(playerPos, null);
+                        DynamicArray<Point> path = a.path(enemyPoint, playerPoint);
+                        
+                        int[] nextPosition = path.get(0).coordinate;
+                        board[enemyPos[1]][enemyPos[0]] = BLANK;
+                        enemy.setPosition(nextPosition);
+                        enemyPos = enemy.getPosition();
+                        board[enemyPos[1]][enemyPos[0]] = enemy.getSymbol();
+                    } catch (Exception e) {}
                 }
             }
         }
@@ -696,6 +715,41 @@ public class Board {
         numMove = 0;
         playerMove = true;
         turn++;
+        if (rand.nextInt(101) <= (Math.pow(points, 2)+20) || enemies.size() == 0) {
+            try {
+                spawnEnemy(new Character(1, 1, 1, 1, 'm'));
+            } catch (Exception e) {}
+        }
+    }
+
+    /**
+     * Replaces all non border tiles with the blank tile.
+     */
+    public void clearBord() {
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                if (board[y][x] != BORDER) {
+                    board[y][x] = BLANK;
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the board to the default settings.
+     */
+    public void reset() {
+        turn = 0;
+        numMove = 0;
+        points = 0;
+        playerMove = true;
+        player = copyPlayer;
+        enemies = new DynamicArray<>();
+        clearBord();
+        try {
+            spawnPlayer(player);
+            spawnEnemy(new Character(1, 1, 1, 1, 'm'));
+        } catch(Exception e){}
     }
 
     /**
@@ -730,7 +784,12 @@ public class Board {
      * @return The stylished board string
      */
     public String toHTMLString(char[][] board) {
-        String string = "<html><style>@font-face {font-family: Caladan; src: url(\"src\\Fonts\\Caladan.ttf\");} pre {font-family: \"Caladan\";}</style><pre>";
+        String string = "<html>"
+                            + "<style>"
+                                + "@font-face {font-family: Caladan; src: url(\"src\\Fonts\\Caladan.ttf\");}"
+                                + "pre {font-family: \"Caladan\"; margin-left: 20px;}"
+                            + "</style>"
+                            + "<pre>";
         for (int i = 0; i < board[0].length+2; i++) {
             string += BORDER + " ";
         }

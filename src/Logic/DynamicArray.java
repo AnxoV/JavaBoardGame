@@ -1,4 +1,4 @@
-package src.Logic;
+package src.logic;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

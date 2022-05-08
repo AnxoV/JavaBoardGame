@@ -1,4 +1,4 @@
-package src.Exceptions;
+package src.exceptions;
 
 public class InvalidPositionError extends Exception {
     public InvalidPositionError(String errorMessage) {

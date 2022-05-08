@@ -1,6 +1,6 @@
-package src.Pathfinder;
+package src.pathfinder;
 
-import src.Logic.*;
+import src.logic.*;
 
 /**
  * The {@code A} class provides an example of the A* pathfinder algorithm.
@@ -14,7 +14,7 @@ import src.Logic.*;
  * @since JDK 11.0
  * @version 1.0
  * 
- * @see src.Pathfinder.Point Point
+ * @see src.pathfinder.Point Point
  */
 public class A {
 

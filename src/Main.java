@@ -2,22 +2,20 @@ package src;
 
 import javax.swing.SwingUtilities;
 
-import src.GUI.*;
-import src.Game.*;
-import src.Game.Character;
+import src.game.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
 
         Board board = new Board(9, 9);
-        board.spawnPlayer(Character.Knight);
-        board.spawnEnemy(new int[]{0, 0}, Character.Bat);
-        GameGUI gameGUI = new GameGUI(board);
+        board.spawnPlayer(new src.game.Character(5, 1, 1, 2, 'k'));
+        board.spawnEnemy(new int[]{0, 0}, new src.game.Character(1, 1, 1, 1, 'm'));
+        Gui gui = new Gui(board);
         
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                gameGUI.run();
+                gui.run();
             }
         };
         SwingUtilities.invokeLater(r);

@@ -1,6 +1,6 @@
-package src.Pathfinder;
+package src.pathfinder;
 
-import src.Logic.*;
+import src.logic.*;
 
 /**
  * The {@code Point} class encapsulates an array
@@ -11,7 +11,7 @@ import src.Logic.*;
  * @since JDK 11.0
  * @version 1.0
  * 
- * @see src.Pathfinder.A A
+ * @see src.pathfinder.A A
  */
 public class Point {
     public int[] coordinate;

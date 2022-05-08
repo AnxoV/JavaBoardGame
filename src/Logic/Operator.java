@@ -1,6 +1,6 @@
-package src.Logic;
+package src.logic;
 
-import src.Exceptions.*;
+import src.exceptions.*;
 
 /**
  * The {@code Operator} class provides static methods

@@ -1,25 +1,15 @@
-package src.Game;
+package src.game;
 
 /**
- * The {@code Character} enum specifies a premade game character object.
+ * The {@code Character} specifies a game character object.
  * In which the character data is stored.
  * 
  * @since JDK 1.11
  * @version 1.0
  * 
- * @see src.Game.Board Board
+ * @see src.game.Board Board
  */
-public enum Character {
-
-    /**
-     * The main character class.
-     */
-    Knight(5, 2, 1, 2, 'k'),
-    
-    /**
-     * The main enemy class.
-     */
-    Bat(1, 1, 1, 1, 'm');
+public class Character {
 
     /**
      * The position of the character.
@@ -60,7 +50,7 @@ public enum Character {
      * @param range - The range of the character
      * @param symbol - The symbol of the character
      */
-    private Character(int hp, int damage, int movePoints, int range, char symbol) {
+    public Character(int hp, int damage, int movePoints, int range, char symbol) {
         position = new int[]{0, 0};
         this.hp = hp;
         this.damage = damage;
